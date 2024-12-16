@@ -2,9 +2,9 @@
 
 namespace Emaia\LaravelTurbo\Tests;
 
+use Emaia\LaravelTurbo\LaravelTurboServiceProvider;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Orchestra\Testbench\TestCase as Orchestra;
-use Emaia\LaravelTurbo\LaravelTurboServiceProvider;
 
 class TestCase extends Orchestra
 {

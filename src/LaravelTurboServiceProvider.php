@@ -2,9 +2,9 @@
 
 namespace Emaia\LaravelTurbo;
 
+use Emaia\LaravelTurbo\Commands\LaravelTurboCommand;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
-use Emaia\LaravelTurbo\Commands\LaravelTurboCommand;
 
 class LaravelTurboServiceProvider extends PackageServiceProvider
 {
@@ -17,9 +17,9 @@ class LaravelTurboServiceProvider extends PackageServiceProvider
          */
         $package
             ->name('laravel-turbo');
-            // ->hasConfigFile()
-            // ->hasViews()
-            // ->hasMigration('create_laravel_turbo_table')
-            // ->hasCommand(LaravelTurboCommand::class);
+        // ->hasConfigFile()
+        // ->hasViews()
+        // ->hasMigration('create_laravel_turbo_table')
+        // ->hasCommand(LaravelTurboCommand::class);
     }
 }
