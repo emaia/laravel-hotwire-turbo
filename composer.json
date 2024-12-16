@@ -17,8 +17,11 @@
     ],
     "require": {
         "php": "^8.4",
+        "illuminate/contracts": "^10.0||^11.0",
+        "illuminate/view": "*",
+        "ramsey/collection": "^2.0",
         "spatie/laravel-package-tools": "^1.16",
-        "illuminate/contracts": "^10.0||^11.0"
+        "symfony/http-foundation": "^7.2"
     },
     "require-dev": {
         "laravel/pint": "^1.14",

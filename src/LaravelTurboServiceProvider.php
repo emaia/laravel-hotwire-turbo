@@ -16,10 +16,10 @@ class LaravelTurboServiceProvider extends PackageServiceProvider
          * More info: https://github.com/spatie/laravel-package-tools
          */
         $package
-            ->name('laravel-turbo')
-            ->hasConfigFile()
-            ->hasViews()
-            ->hasMigration('create_laravel_turbo_table')
-            ->hasCommand(LaravelTurboCommand::class);
+            ->name('laravel-turbo');
+            // ->hasConfigFile()
+            // ->hasViews()
+            // ->hasMigration('create_laravel_turbo_table')
+            // ->hasCommand(LaravelTurboCommand::class);
     }
 }
