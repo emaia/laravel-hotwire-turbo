@@ -2,6 +2,7 @@
 
 namespace Emaia\LaravelTurbo;
 
+use Emaia\LaravelTurbo\Enums\Action;
 use Illuminate\View\View;
 
 class Stream implements StreamInterface

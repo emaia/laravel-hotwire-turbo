@@ -2,11 +2,9 @@
 
 namespace Emaia\LaravelTurbo\Facades;
 
+use Emaia\LaravelTurbo\StreamInterface;
 use Illuminate\Support\Facades\Facade;
 
-/**
- * @see \Emaia\LaravelTurbo\LaravelTurbo
- */
 class LaravelTurbo extends Facade
 {
     protected static function getFacadeAccessor(): string

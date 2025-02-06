@@ -12,6 +12,8 @@ class Response extends SymfonyResponse
 
     public function __construct(StreamInterface $content, $status = 200, array $headers = [])
     {
+        parent::__construct();
+
         $this->headers = new ResponseHeaderBag($headers);
 
         $this->setContent($content);
