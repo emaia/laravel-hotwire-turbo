@@ -2,7 +2,6 @@
 
 namespace Emaia\LaravelTurbo\Facades;
 
-use Emaia\LaravelTurbo\StreamInterface;
 use Illuminate\Support\Facades\Facade;
 
 class LaravelTurbo extends Facade
