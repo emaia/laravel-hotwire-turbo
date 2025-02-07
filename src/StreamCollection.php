@@ -24,7 +24,7 @@ class StreamCollection extends Collection implements StreamInterface
         }, '');
     }
 
-    public static function make($items = [])
+    public static function make($items = []): static
     {
         return new static($items);
     }
