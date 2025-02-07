@@ -1,6 +1,6 @@
 {
     "name": "emaia/laravel-hotwire-turbo",
-    "description": "This is my package laravel-turbo",
+    "description": "Hotwire Turbo with Laravel",
     "keywords": [
         "laravel",
         "hotwire",
@@ -38,8 +38,7 @@
     },
     "autoload": {
         "psr-4": {
-            "Emaia\\LaravelHotwireTurbo\\": "src/",
-            "Emaia\\LaravelHotwireTurbo\\Database\\Factories\\": "database/factories/"
+            "Emaia\\LaravelHotwireTurbo\\": "src/"
         }
     },
     "autoload-dev": {

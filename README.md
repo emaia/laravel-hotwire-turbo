@@ -1,4 +1,4 @@
-# This is my package laravel-turbo
+# Hotwire Turbo with Laravel!
 
 [![Latest Version on Packagist](https://img.shields.io/packagist/v/emaia/laravel-turbo.svg?style=flat-square)](https://packagist.org/packages/emaia/laravel-turbo)
 [![GitHub Tests Action Status](https://img.shields.io/github/actions/workflow/status/emaia/laravel-turbo/run-tests.yml?branch=main&label=tests&style=flat-square)](https://github.com/emaia/laravel-turbo/actions?query=workflow%3Arun-tests+branch%3Amain)
