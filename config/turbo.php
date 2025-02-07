@@ -1,6 +1,6 @@
 <?php
 
-// config for Emaia/LaravelTurbo
+// config for Emaia/LaravelHotwireTurbo
 return [
 
 ];
