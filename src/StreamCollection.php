@@ -1,6 +1,6 @@
 <?php
 
-namespace Emaia\LaravelTurbo;
+namespace Emaia\LaravelHotwireTurbo;
 
 use Ramsey\Collection\AbstractCollection;
 

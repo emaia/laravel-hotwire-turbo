@@ -1,12 +1,13 @@
 {
-    "name": "emaia/laravel-turbo",
+    "name": "emaia/laravel-hotwire-turbo",
     "description": "This is my package laravel-turbo",
     "keywords": [
-        "Emaia",
         "laravel",
-        "laravel-turbo"
+        "hotwire",
+        "turbo",
+        "laravel-hotwire-turbo"
     ],
-    "homepage": "https://github.com/emaia/laravel-turbo",
+    "homepage": "https://github.com/emaia/laravel-hotwire-turbo",
     "license": "MIT",
     "authors": [
         {
@@ -37,13 +38,13 @@
     },
     "autoload": {
         "psr-4": {
-            "Emaia\\LaravelTurbo\\": "src/",
-            "Emaia\\LaravelTurbo\\Database\\Factories\\": "database/factories/"
+            "Emaia\\LaravelHotwireTurbo\\": "src/",
+            "Emaia\\LaravelHotwireTurbo\\Database\\Factories\\": "database/factories/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "Emaia\\LaravelTurbo\\Tests\\": "tests/",
+            "Emaia\\LaravelHotwireTurbo\\Tests\\": "tests/",
             "Workbench\\App\\": "workbench/app/"
         }
     },
@@ -65,10 +66,10 @@
     "extra": {
         "laravel": {
             "providers": [
-                "Emaia\\LaravelTurbo\\LaravelTurboServiceProvider"
+                "Emaia\\LaravelHotwireTurbo\\TurboServiceProvider"
             ],
             "aliases": {
-                "LaravelTurbo": "Emaia\\LaravelTurbo\\Facades\\LaravelTurbo"
+                "Turbo": "Emaia\\LaravelHotwireTurbo\\Facades\\LaravelHotwireTurbo"
             }
         }
     },

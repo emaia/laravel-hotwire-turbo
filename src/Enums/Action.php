@@ -1,6 +1,6 @@
 <?php
 
-namespace Emaia\LaravelTurbo\Enums;
+namespace Emaia\LaravelHotwireTurbo\Enums;
 
 enum Action: string
 {

@@ -1,6 +1,6 @@
 <?php
 
-namespace Emaia\LaravelTurbo;
+namespace Emaia\LaravelHotwireTurbo;
 
 use Illuminate\Http\ResponseTrait;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;

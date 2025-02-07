@@ -1,8 +1,8 @@
 <?php
 
-namespace Emaia\LaravelTurbo;
+namespace Emaia\LaravelHotwireTurbo;
 
-use Emaia\LaravelTurbo\Enums\Action;
+use Emaia\LaravelHotwireTurbo\Enums\Action;
 use Illuminate\View\View;
 
 class Stream implements StreamInterface
@@ -19,6 +19,6 @@ class Stream implements StreamInterface
 
     public function render(): string
     {
-        return view('laravel-turbo::turbo-stream', get_object_vars($this))->render();
+        return view('turbo::turbo-stream', get_object_vars($this))->render();
     }
 }

@@ -1,15 +1,16 @@
 <?php
 
-namespace Emaia\LaravelTurbo;
+namespace Emaia\LaravelHotwireTurbo;
 
-use Emaia\LaravelTurbo\Response as TurboResponse;
+use Emaia\LaravelHotwireTurbo\Response as TurboResponse;
 use Illuminate\Support\Facades\Request;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Str;
+use Illuminate\View\Compilers\BladeCompiler;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
 
-class LaravelTurboServiceProvider extends PackageServiceProvider
+class TurboServiceProvider extends PackageServiceProvider
 {
     public function configurePackage(Package $package): void
     {
@@ -26,7 +27,11 @@ class LaravelTurboServiceProvider extends PackageServiceProvider
     public function packageBooted(): void
     {
 
-        $this->loadViewsFrom(__DIR__.'/../resources/views', 'laravel-turbo');
+        $this->loadViewsFrom(__DIR__.'/../resources/views', 'turbo');
+
+        $this->callAfterResolving('blade.compiler', function (BladeCompiler $blade) {
+            $blade->anonymousComponentPath(__DIR__.'/../resources/views/components', 'turbo');
+        });
 
         Request::macro('wantsTurboStream', function () {
             if (Str::contains(request()->header('Accept', ''), 'text/vnd.turbo-stream')) {

@@ -1,13 +1,14 @@
 <?php
 
-namespace Emaia\LaravelTurbo\Facades;
+namespace Emaia\LaravelHotwireTurbo\Facades;
 
+use Emaia\LaravelHotwireTurbo\Turbo;
 use Illuminate\Support\Facades\Facade;
 
 class LaravelTurbo extends Facade
 {
     protected static function getFacadeAccessor(): string
     {
-        return \Emaia\LaravelTurbo\LaravelTurbo::class;
+        return Turbo::class;
     }
 }

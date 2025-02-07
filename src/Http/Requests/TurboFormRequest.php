@@ -1,6 +1,6 @@
 <?php
 
-namespace Emaia\LaravelTurbo\Http\Requests;
+namespace Emaia\LaravelHotwireTurbo\Http\Requests;
 
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;

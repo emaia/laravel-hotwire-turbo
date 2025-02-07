@@ -1,6 +1,6 @@
 <?php
 
-namespace Emaia\LaravelTurbo;
+namespace Emaia\LaravelHotwireTurbo;
 
 interface StreamInterface
 {
