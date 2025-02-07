@@ -2,24 +2,30 @@
 
 namespace Emaia\LaravelHotwireTurbo;
 
-use Ramsey\Collection\AbstractCollection;
+use Illuminate\Support\Collection;
 
-class StreamCollection extends AbstractCollection implements StreamInterface
+class StreamCollection extends Collection implements StreamInterface
 {
-    public function getType(): string
+    public function __construct($items = [])
     {
-        return Stream::class;
+        $this->each(function ($item) {
+            if (! $item instanceof Stream) {
+                throw new \InvalidArgumentException('Collection items must be instances of Stream');
+            }
+        });
+
+        parent::__construct($items);
     }
 
     public function render(): string
     {
-        $content = '';
+        return $this->reduce(function ($content, Stream $stream) {
+            return $content.$stream->render();
+        }, '');
+    }
 
-        /** @var Stream $stream */
-        foreach ($this->data as $stream) {
-            $content .= $stream->render();
-        }
-
-        return $content;
+    public static function make($items = [])
+    {
+        return new static($items);
     }
 }

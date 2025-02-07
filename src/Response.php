@@ -2,26 +2,18 @@
 
 namespace Emaia\LaravelHotwireTurbo;
 
-use Illuminate\Http\ResponseTrait;
-use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
-use Symfony\Component\HttpFoundation\ResponseHeaderBag;
+use Illuminate\Http\Response as IlluminateResponse;
 
-class Response extends SymfonyResponse
+class Response extends IlluminateResponse
 {
-    use ResponseTrait;
-
     public function __construct(StreamInterface $content, $status = 200, array $headers = [])
     {
-        parent::__construct();
-
-        $this->headers = new ResponseHeaderBag($headers);
+        parent::__construct('', $status, $headers);
 
         $this->setContent($content);
-        $this->setStatusCode($status);
-        $this->setProtocolVersion('1.0');
     }
 
-    public function setContent(mixed $content): static
+    public function setContent($content): static
     {
         $this->original = $content;
 
@@ -31,8 +23,6 @@ class Response extends SymfonyResponse
             $content = $content->render();
         }
 
-        parent::setContent($content);
-
-        return $this;
+        return parent::setContent($content);
     }
 }
