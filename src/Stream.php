@@ -31,6 +31,6 @@ class Stream implements StreamInterface
      */
     public function render(): string
     {
-        return view('turbo::turbo-stream', get_object_vars($this))->render();
+        return view('turbo::turbo-stream', get_object_vars($this))->render(); // @phpstan-ignore argument.type
     }
 }
