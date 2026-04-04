@@ -24,6 +24,17 @@ class StreamCollection extends Collection implements StreamInterface
         }, '');
     }
 
+    public function add($item): static
+    {
+        if (! $item instanceof Stream) {
+            throw new \InvalidArgumentException('Collection items must be instances of Stream');
+        }
+
+        $this->push($item);
+
+        return $this;
+    }
+
     public static function make($items = [], ...$args): static
     {
         return new static($items);

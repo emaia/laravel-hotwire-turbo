@@ -27,6 +27,51 @@ class Stream implements StreamInterface
         }
     }
 
+    public static function append(string $target, mixed $content = ''): static
+    {
+        return new static(Action::APPEND, $target, $content);
+    }
+
+    public static function prepend(string $target, mixed $content = ''): static
+    {
+        return new static(Action::PREPEND, $target, $content);
+    }
+
+    public static function replace(string $target, mixed $content = ''): static
+    {
+        return new static(Action::REPLACE, $target, $content);
+    }
+
+    public static function update(string $target, mixed $content = ''): static
+    {
+        return new static(Action::UPDATE, $target, $content);
+    }
+
+    public static function remove(string $target): static
+    {
+        return new static(Action::REMOVE, $target);
+    }
+
+    public static function after(string $target, mixed $content = ''): static
+    {
+        return new static(Action::AFTER, $target, $content);
+    }
+
+    public static function before(string $target, mixed $content = ''): static
+    {
+        return new static(Action::BEFORE, $target, $content);
+    }
+
+    public static function morph(string $target, mixed $content = ''): static
+    {
+        return new static(Action::MORPH, $target, $content);
+    }
+
+    public static function refresh(): static
+    {
+        return new static(Action::REFRESH, 'body');
+    }
+
     /**
      * @throws Throwable
      */
