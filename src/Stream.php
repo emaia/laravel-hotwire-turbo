@@ -14,11 +14,12 @@ class Stream implements StreamInterface
      */
     public function __construct(
         protected Action $action,
-        protected string $target,
-        protected mixed $content = '')
-    {
-        if (empty($target)) {
-            throw new InvalidArgumentException('Target ID cannot be empty');
+        protected string $target = '',
+        protected mixed $content = '',
+        protected string $targets = '',
+    ) {
+        if (empty($target) && empty($targets)) {
+            throw new InvalidArgumentException('Either target or targets must be provided');
         }
 
         if ($content instanceof View) {

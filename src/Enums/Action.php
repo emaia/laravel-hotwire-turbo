@@ -9,4 +9,8 @@ enum Action: string
     case REPLACE = 'replace';
     case UPDATE = 'update';
     case REMOVE = 'remove';
+    case AFTER = 'after';
+    case BEFORE = 'before';
+    case MORPH = 'morph';
+    case REFRESH = 'refresh';
 }
