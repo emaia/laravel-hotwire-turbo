@@ -8,7 +8,7 @@ if (!empty($targets ?? '')) {
 }
 @endphp
 <turbo-stream action="{{ $action }}"{!! $targetAttr !!}>
-@if($action !== 'remove')
+@if($action->value !== 'remove')
     <template>
         {!! isset($slot) && $slot->isNotEmpty() ? $slot : $content !!}
     </template>
