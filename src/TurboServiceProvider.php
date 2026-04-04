@@ -3,6 +3,7 @@
 namespace Emaia\LaravelHotwireTurbo;
 
 use Emaia\LaravelHotwireTurbo\Response as TurboResponse;
+use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Request;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Str;
@@ -47,6 +48,22 @@ class TurboServiceProvider extends PackageServiceProvider
 
         Response::macro('turboStream', function (StreamInterface $content, $status = 200, array $headers = []) {
             return new TurboResponse($content, $status, $headers);
+        });
+
+        Blade::directive('turboNocache', function () {
+            return '<meta name="turbo-cache-control" content="no-cache">';
+        });
+
+        Blade::directive('turboNoPreview', function () {
+            return '<meta name="turbo-cache-control" content="no-preview">';
+        });
+
+        Blade::directive('turboRefreshMethod', function (string $method) {
+            return "<?php echo '<meta name=\"turbo-refresh-method\" content=\"'.e({$method}).'\">' ?>";
+        });
+
+        Blade::directive('turboRefreshScroll', function (string $scroll) {
+            return "<?php echo '<meta name=\"turbo-refresh-scroll\" content=\"'.e({$scroll}).'\">' ?>";
         });
     }
 }

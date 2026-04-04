@@ -9,7 +9,7 @@ class TurboFormRequest extends FormRequest
 {
     protected function failedValidation(Validator $validator): void
     {
-        if (request()->wasFromTurboFrame()) { // @phpstan-ignore method.notFound
+        if (request()->wasFromTurboFrame()) {
             $this->redirect = url(session('_previous.url'));
         }
 
