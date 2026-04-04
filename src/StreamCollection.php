@@ -8,13 +8,13 @@ class StreamCollection extends Collection implements StreamInterface
 {
     public function __construct($items = [])
     {
+        parent::__construct($items);
+
         $this->each(function ($item) {
             if (! $item instanceof Stream) {
                 throw new \InvalidArgumentException('Collection items must be instances of Stream');
             }
         });
-
-        parent::__construct($items);
     }
 
     public function render(): string

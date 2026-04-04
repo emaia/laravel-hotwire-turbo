@@ -33,12 +33,8 @@ class TurboServiceProvider extends PackageServiceProvider
             $blade->anonymousComponentPath(__DIR__.'/../resources/views/components', 'turbo');
         });
 
-        Request::macro('wantsTurboStream', function () {
-            if (Str::contains(request()->header('Accept', ''), 'text/vnd.turbo-stream')) {
-                return true;
-            }
-
-            return false;
+        Request::macro('wantsTurboStream', function (): bool {
+            return Str::contains(request()->header('Accept', ''), 'text/vnd.turbo-stream');
         });
 
         Request::macro('wasFromTurboFrame', function (?string $frame = null): bool {
