@@ -33,9 +33,29 @@ The package supports all Turbo Stream actions via the `Action` enum:
 | `morph` | Morph the target element to the new content |
 | `refresh` | Trigger a page refresh |
 
-### Creating Streams
+### Fluent Builder (Recommended)
 
-Use the fluent static methods for clean, readable stream creation:
+The `turbo_stream()` helper provides a chainable API with zero imports needed:
+
+```php
+return turbo_stream()
+    ->append('messages', view('messages.item', compact('message')))
+    ->remove('modal')
+    ->update('counter', '<span>42</span>')
+    ->respond();
+```
+
+Pass a custom status code if needed:
+
+```php
+return turbo_stream()
+    ->replace('form', view('form', ['errors' => $errors]))
+    ->respond(422);
+```
+
+### Creating Individual Streams
+
+Use the fluent static methods on `Stream`:
 
 ```php
 use Emaia\LaravelHotwireTurbo\Stream;
@@ -51,7 +71,7 @@ Stream::morph('profile', view('users.profile', ['user' => $user]))
 Stream::refresh()
 ```
 
-You can also use the constructor directly with the `Action` enum:
+Or use the constructor directly with the `Action` enum:
 
 ```php
 use Emaia\LaravelHotwireTurbo\Enums\Action;
@@ -69,7 +89,6 @@ $stream = new Stream(
 Use `targets` to target multiple DOM elements via CSS selector instead of a single ID:
 
 ```php
-// Target all elements matching a CSS selector
 $stream = new Stream(
     action: Action::UPDATE,
     targets: '.notification-badge',
@@ -79,20 +98,19 @@ $stream = new Stream(
 
 ### Stream Collections
 
-Send multiple Turbo Stream actions in a single response:
+Compose multiple streams manually when you need more control:
 
 ```php
 use Emaia\LaravelHotwireTurbo\StreamCollection;
 use Emaia\LaravelHotwireTurbo\Stream;
 
-// Using the constructor
 $streams = new StreamCollection([
     Stream::prepend('flash-container', view('components.flash', ['message' => 'Saved!'])),
     Stream::update('modal', ''),
     Stream::remove('loading-spinner'),
 ]);
 
-// Or building fluently
+// Or build fluently
 $streams = StreamCollection::make()
     ->add(Stream::append('messages', view('chat.message', $message)))
     ->add(Stream::update('unread-count', '<span>0</span>'))
@@ -125,9 +143,9 @@ The package adds macros to Laravel's `Request` to detect Turbo-specific headers:
 ```php
 // Check if the request accepts Turbo Stream responses
 if (request()->wantsTurboStream()) {
-    return response()->turboStream(
-        Stream::replace('todo-1', view('todos.item', ['todo' => $todo]))
-    );
+    return turbo_stream()
+        ->replace('todo-1', view('todos.item', ['todo' => $todo]))
+        ->respond();
 }
 
 return redirect()->back();
@@ -164,9 +182,11 @@ class UpdateProfileRequest extends TurboFormRequest
 }
 ```
 
-### Blade Component
+### Blade Components
 
-Use the `<x-turbo::stream>` Blade component directly in your views:
+#### Turbo Stream
+
+Use the `<x-turbo::stream>` component directly in your views:
 
 ```blade
 <x-turbo::stream action="append" target="messages">
@@ -183,12 +203,62 @@ Use the `<x-turbo::stream>` Blade component directly in your views:
 </x-turbo::stream>
 ```
 
+#### Turbo Frame
+
+Use the `<x-turbo::frame>` component to create Turbo Frames:
+
+```blade
+{{-- Basic frame --}}
+<x-turbo::frame id="user-profile">
+    @include('users.profile', ['user' => $user])
+</x-turbo::frame>
+
+{{-- Lazy-loaded frame --}}
+<x-turbo::frame id="comments" src="/posts/{{ $post->id }}/comments" loading="lazy">
+    <p>Loading comments...</p>
+</x-turbo::frame>
+
+{{-- Frame that navigates the whole page --}}
+<x-turbo::frame id="navigation" target="_top">
+    <a href="/dashboard">Dashboard</a>
+</x-turbo::frame>
+
+{{-- Disabled frame (no navigation) --}}
+<x-turbo::frame id="preview" :disabled="true">
+    <p>This frame won't navigate.</p>
+</x-turbo::frame>
+```
+
+### Turbo Drive Blade Directives
+
+Control Turbo Drive behavior with Blade directives in your layout's `<head>`:
+
+```blade
+<head>
+    {{-- Exclude page from Turbo's cache --}}
+    @turboNocache
+
+    {{-- Don't show cached preview on revisit --}}
+    @turboNoPreview
+
+    {{-- Use morphing for page refreshes (Turbo 8) --}}
+    @turboRefreshMethod('morph')
+
+    {{-- Preserve scroll position on refresh --}}
+    @turboRefreshScroll('preserve')
+</head>
+```
+
+| Directive | Output |
+|-----------|--------|
+| `@turboNocache` | `<meta name="turbo-cache-control" content="no-cache">` |
+| `@turboNoPreview` | `<meta name="turbo-cache-control" content="no-preview">` |
+| `@turboRefreshMethod('morph')` | `<meta name="turbo-refresh-method" content="morph">` |
+| `@turboRefreshScroll('preserve')` | `<meta name="turbo-refresh-scroll" content="preserve">` |
+
 ### Full Controller Example
 
 ```php
-use Emaia\LaravelHotwireTurbo\Stream;
-use Emaia\LaravelHotwireTurbo\StreamCollection;
-
 class MessageController extends Controller
 {
     public function store(Request $request)
@@ -196,12 +266,11 @@ class MessageController extends Controller
         $message = Message::create($request->validated());
 
         if (request()->wantsTurboStream()) {
-            return response()->turboStream(
-                StreamCollection::make()
-                    ->add(Stream::append('messages', view('messages.item', compact('message'))))
-                    ->add(Stream::update('message-form', view('messages.form')))
-                    ->add(Stream::update('message-count', '<span>' . Message::count() . '</span>'))
-            );
+            return turbo_stream()
+                ->append('messages', view('messages.item', compact('message')))
+                ->update('message-form', view('messages.form'))
+                ->update('message-count', '<span>' . Message::count() . '</span>')
+                ->respond();
         }
 
         return redirect()->route('messages.index');
@@ -212,9 +281,9 @@ class MessageController extends Controller
         $message->delete();
 
         if (request()->wantsTurboStream()) {
-            return response()->turboStream(
-                Stream::remove("message-{$message->id}")
-            );
+            return turbo_stream()
+                ->remove("message-{$message->id}")
+                ->respond();
         }
 
         return redirect()->route('messages.index');
