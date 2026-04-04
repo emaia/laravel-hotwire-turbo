@@ -17,38 +17,208 @@ composer require emaia/laravel-hotwire-turbo
 
 ## Usage
 
+### Turbo Stream Actions
+
+The package supports all Turbo Stream actions via the `Action` enum:
+
+| Action | Description |
+|--------|-------------|
+| `append` | Add content after the target's existing content |
+| `prepend` | Add content before the target's existing content |
+| `replace` | Replace the entire target element |
+| `update` | Update the target element's content |
+| `remove` | Remove the target element |
+| `after` | Insert content after the target element |
+| `before` | Insert content before the target element |
+| `morph` | Morph the target element to the new content |
+| `refresh` | Trigger a page refresh |
+
+### Creating Streams
+
+Use the fluent static methods for clean, readable stream creation:
+
 ```php
-/* Some controller method... */
-public function update(Request $request)
+use Emaia\LaravelHotwireTurbo\Stream;
+
+Stream::append('messages', view('chat.message', ['message' => $message]))
+Stream::prepend('notifications', '<div class="alert">New!</div>')
+Stream::replace('user-card', view('users.card', ['user' => $user]))
+Stream::update('counter', '<span>42</span>')
+Stream::remove('modal')
+Stream::after('item-3', view('items.row', ['item' => $item]))
+Stream::before('item-3', view('items.row', ['item' => $item]))
+Stream::morph('profile', view('users.profile', ['user' => $user]))
+Stream::refresh()
+```
+
+You can also use the constructor directly with the `Action` enum:
+
+```php
+use Emaia\LaravelHotwireTurbo\Enums\Action;
+use Emaia\LaravelHotwireTurbo\Stream;
+
+$stream = new Stream(
+    action: Action::APPEND,
+    target: 'messages',
+    content: view('chat.message', ['message' => $message]),
+);
+```
+
+### Targeting Multiple Elements (CSS Selector)
+
+Use `targets` to target multiple DOM elements via CSS selector instead of a single ID:
+
+```php
+// Target all elements matching a CSS selector
+$stream = new Stream(
+    action: Action::UPDATE,
+    targets: '.notification-badge',
+    content: '<span>5</span>',
+);
+```
+
+### Stream Collections
+
+Send multiple Turbo Stream actions in a single response:
+
+```php
+use Emaia\LaravelHotwireTurbo\StreamCollection;
+use Emaia\LaravelHotwireTurbo\Stream;
+
+// Using the constructor
+$streams = new StreamCollection([
+    Stream::prepend('flash-container', view('components.flash', ['message' => 'Saved!'])),
+    Stream::update('modal', ''),
+    Stream::remove('loading-spinner'),
+]);
+
+// Or building fluently
+$streams = StreamCollection::make()
+    ->add(Stream::append('messages', view('chat.message', $message)))
+    ->add(Stream::update('unread-count', '<span>0</span>'))
+    ->add(Stream::remove('typing-indicator'));
+
+return response()->turboStream($streams);
+```
+
+### Returning Turbo Stream Responses
+
+The package adds a `turboStream` macro to Laravel's response factory. It automatically sets the `Content-Type: text/vnd.turbo-stream.html` header:
+
+```php
+// Single stream
+return response()->turboStream(
+    Stream::replace('todo-item-1', view('todos.item', ['todo' => $todo]))
+);
+
+// Multiple streams
+return response()->turboStream($streamCollection);
+
+// With custom status code
+return response()->turboStream($stream, 201);
+```
+
+### Detecting Turbo Requests
+
+The package adds macros to Laravel's `Request` to detect Turbo-specific headers:
+
+```php
+// Check if the request accepts Turbo Stream responses
+if (request()->wantsTurboStream()) {
+    return response()->turboStream(
+        Stream::replace('todo-1', view('todos.item', ['todo' => $todo]))
+    );
+}
+
+return redirect()->back();
+```
+
+```php
+// Check if the request came from any Turbo Frame
+if (request()->wasFromTurboFrame()) {
+    // ...
+}
+
+// Check if it came from a specific Turbo Frame
+if (request()->wasFromTurboFrame('modal')) {
+    // ...
+}
+```
+
+### Form Validation with Turbo Frames
+
+Extend `TurboFormRequest` instead of `FormRequest` to handle validation errors correctly within Turbo Frames. When validation fails inside a Turbo Frame, it redirects to the previous URL so the frame can re-render with errors:
+
+```php
+use Emaia\LaravelHotwireTurbo\Http\Requests\TurboFormRequest;
+
+class UpdateProfileRequest extends TurboFormRequest
 {
+    public function rules(): array
+    {
+        return [
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'email'],
+        ];
+    }
+}
+```
 
-    /* ... */
+### Blade Component
 
-    if (request()->wasFromTurboFrame('modal')) {
+Use the `<x-turbo::stream>` Blade component directly in your views:
 
-        $streamCollection = new StreamCollection([
-            new Stream(
-                Action::PREPEND,
-                'flash-container',
-                view('components.flash-message', [
-                    'hasSuccess' => true,
-                    'message' => $successMessage,
-                ])
-            ),
-            new Stream(
-                Action::UPDATE,
-                'modal',
-                ''
-            ),
-        ]);
+```blade
+<x-turbo::stream action="append" target="messages">
+    <div class="message">
+        {{ $message->body }}
+    </div>
+</x-turbo::stream>
 
-        return response()->turboStream(
-            $streamCollection
-        );
+<x-turbo::stream action="remove" target="notification-{{ $id }}" />
 
+{{-- Target multiple elements with CSS selector --}}
+<x-turbo::stream action="update" targets=".unread-badge">
+    <span>0</span>
+</x-turbo::stream>
+```
+
+### Full Controller Example
+
+```php
+use Emaia\LaravelHotwireTurbo\Stream;
+use Emaia\LaravelHotwireTurbo\StreamCollection;
+
+class MessageController extends Controller
+{
+    public function store(Request $request)
+    {
+        $message = Message::create($request->validated());
+
+        if (request()->wantsTurboStream()) {
+            return response()->turboStream(
+                StreamCollection::make()
+                    ->add(Stream::append('messages', view('messages.item', compact('message'))))
+                    ->add(Stream::update('message-form', view('messages.form')))
+                    ->add(Stream::update('message-count', '<span>' . Message::count() . '</span>'))
+            );
+        }
+
+        return redirect()->route('messages.index');
     }
 
-    return redirect()->back()->with('success', $successMessage);
+    public function destroy(Message $message)
+    {
+        $message->delete();
+
+        if (request()->wantsTurboStream()) {
+            return response()->turboStream(
+                Stream::remove("message-{$message->id}")
+            );
+        }
+
+        return redirect()->route('messages.index');
+    }
 }
 ```
 
