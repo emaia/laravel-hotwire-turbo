@@ -12,9 +12,13 @@ class Turbo
         return new TurboResponse($content, $status, $headers);
     }
 
-    public static function if(Response|StreamInterface $stream, Response $fallback): Response
+    public static function if(Response|StreamInterface $stream, Response $fallback, ?string $frame = null): Response
     {
         if (! request()->wantsTurboStream()) {
+            return $fallback;
+        }
+
+        if ($frame && ! request()->wasFromTurboFrame($frame)) {
             return $fallback;
         }
 

@@ -216,6 +216,16 @@ return Turbo::if(
 );
 ```
 
+Scope the response to a specific Turbo Frame with the `frame` parameter. The stream is returned only when the request both wants Turbo **and** comes from the matching frame:
+
+```php
+return Turbo::if(
+    stream: turbo_stream()->remove('modal-content'),
+    fallback: redirect()->route('messages.index'),
+    frame: 'modal',
+);
+```
+
 ### Custom Stream Actions
 
 Use `Stream::action()` for custom Turbo Stream actions with arbitrary HTML attributes:
@@ -367,6 +377,15 @@ class MessageController extends Controller
         return Turbo::if(
             stream: turbo_stream()->remove(dom_id($message)),
             fallback: redirect()->route('messages.index'),
+        );
+    }
+
+    public function edit(Message $message)
+    {
+        return Turbo::if(
+            stream: turbo_stream()->update('modal-content', view('messages.edit', compact('message'))),
+            fallback: view('messages.edit', compact('message')),
+            frame: 'modal',
         );
     }
 }
