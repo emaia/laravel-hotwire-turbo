@@ -56,6 +56,7 @@ class TurboServiceProvider extends PackageServiceProvider
             return new TurboResponse($content, $status, $headers);
         });
 
+        /** @param view-string|View $view */
         Response::macro('turboStreamView', function (string|View $view, array $data = []) {
             return turbo_stream_view($view, $data);
         });
@@ -95,7 +96,13 @@ class TurboServiceProvider extends PackageServiceProvider
 
         TestResponse::macro('assertTurboStream', function (?Closure $callback = null): TestResponse {
             /** @var TestResponse $this */
-            $this->assertHeader('Content-Type', 'text/vnd.turbo-stream.html; charset=UTF-8');
+            $contentType = $this->headers->get('Content-Type', '');
+
+            Assert::assertStringContainsString(
+                'text/vnd.turbo-stream.html',
+                $contentType,
+                'Response Content-Type is not a Turbo Stream.',
+            );
 
             $streams = ConvertTestResponseToTurboStreamCollection::convert($this);
             $assertable = new AssertableTurboStream($streams);

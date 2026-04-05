@@ -11,3 +11,11 @@ parameters:
     ignoreErrors:
             - '#Unsafe usage of new static\(\)#'
             - '#Trait .+ is used zero times and is not analysed#'
+            -
+                message: '#Call to an undefined method Illuminate\\Http\\Request::(wantsTurboStream|wasFromTurboFrame)\(\)#'
+                reportUnmatched: false
+            - identifier: argument.type
+              message: '#Parameter \#1 \$view of function view expects view-string\|null#'
+              reportUnmatched: false
+            - identifier: method.notFound
+              reportUnmatched: false

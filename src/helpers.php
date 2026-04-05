@@ -27,6 +27,9 @@ if (! function_exists('dom_class')) {
 }
 
 if (! function_exists('turbo_stream_view')) {
+    /**
+     * @param  view-string|View  $view
+     */
     function turbo_stream_view(string|View $view, array $data = []): Response
     {
         if (! $view instanceof View) {
