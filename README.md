@@ -194,6 +194,47 @@ return response()->turboStreamView('messages.streams.created', compact('message'
 <x-turbo::stream action="remove" target="new-message-form" />
 ```
 
+### Conditional Turbo Responses
+
+`Turbo::if()` eliminates the most common if/else pattern in Turbo controllers. It returns the stream when the request wants Turbo, or the fallback otherwise:
+
+```php
+use Emaia\LaravelHotwireTurbo\Turbo;
+
+return Turbo::if(
+    stream: turbo_stream()->remove(dom_id($message))->respond(),
+    fallback: redirect()->route('messages.index'),
+);
+```
+
+You can also pass a `StreamInterface` directly (it will be wrapped in a `TurboResponse` automatically):
+
+```php
+return Turbo::if(
+    stream: turbo_stream()->remove(dom_id($message)),
+    fallback: redirect()->route('messages.index'),
+);
+```
+
+### Custom Stream Actions
+
+Use `Stream::action()` for custom Turbo Stream actions with arbitrary HTML attributes:
+
+```php
+use Emaia\LaravelHotwireTurbo\Stream;
+
+Stream::action('console-log', 'debug', '<p>Debug info</p>', [
+    'data-level' => 'info',
+]);
+// <turbo-stream action="console-log" target="debug" data-level="info">...
+
+// Via the fluent builder
+return turbo_stream()
+    ->action('notification', 'alerts', '<p>Saved!</p>', ['data-timeout' => '3000'])
+    ->remove('modal')
+    ->respond();
+```
+
 ### Detecting Turbo Requests
 
 ```php
@@ -301,34 +342,32 @@ Control Turbo Drive behavior in your layout's `<head>`:
 ### Full Controller Example
 
 ```php
+use Emaia\LaravelHotwireTurbo\Turbo;
+
 class MessageController extends Controller
 {
     public function store(Request $request)
     {
         $message = Message::create($request->validated());
 
-        if (request()->wantsTurboStream()) {
-            return turbo_stream()
+        return Turbo::if(
+            stream: turbo_stream()
                 ->append('messages', view('messages.item', compact('message')))
                 ->update('message-form', view('messages.form'))
                 ->update('message-count', '<span>' . Message::count() . '</span>')
-                ->respond();
-        }
-
-        return redirect()->route('messages.index');
+                ->respond(),
+            fallback: redirect()->route('messages.index'),
+        );
     }
 
     public function destroy(Message $message)
     {
         $message->delete();
 
-        if (request()->wantsTurboStream()) {
-            return turbo_stream()
-                ->remove(dom_id($message))
-                ->respond();
-        }
-
-        return redirect()->route('messages.index');
+        return Turbo::if(
+            stream: turbo_stream()->remove(dom_id($message)),
+            fallback: redirect()->route('messages.index'),
+        );
     }
 }
 ```

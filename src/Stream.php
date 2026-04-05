@@ -10,13 +10,16 @@ use Throwable;
 class Stream implements StreamInterface
 {
     /**
+     * @param  array<string, string>  $attributes
+     *
      * @throws Throwable
      */
     public function __construct(
-        protected Action $action,
+        protected Action|string $action,
         protected string $target = '',
         protected mixed $content = '',
         protected string $targets = '',
+        protected array $attributes = [],
     ) {
         if (empty($target) && empty($targets)) {
             throw new InvalidArgumentException('Either target or targets must be provided');
@@ -25,6 +28,14 @@ class Stream implements StreamInterface
         if ($content instanceof View) {
             $this->content = $content->render();
         }
+    }
+
+    /**
+     * @param  array<string, string>  $attributes
+     */
+    public static function action(string $action, string $target, mixed $content = '', array $attributes = []): static
+    {
+        return new static($action, $target, $content, '', $attributes);
     }
 
     public static function append(string $target, mixed $content = ''): static

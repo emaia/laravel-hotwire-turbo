@@ -76,6 +76,16 @@ class TurboStreamBuilder implements StreamInterface
         return $this;
     }
 
+    /**
+     * @param  array<string, string>  $attributes
+     */
+    public function action(string $action, string $target, mixed $content = '', array $attributes = []): static
+    {
+        $this->streams->add(Stream::action($action, $target, $content, $attributes));
+
+        return $this;
+    }
+
     public function render(): string
     {
         return $this->streams->render();
