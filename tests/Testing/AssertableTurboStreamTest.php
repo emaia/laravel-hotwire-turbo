@@ -23,7 +23,7 @@ beforeEach(function () {
 it('adds turbo accept header via trait', function () {
     $response = $this->turbo()->get('/turbo-test');
 
-    $response->assertHeader('Content-Type', 'text/vnd.turbo-stream.html; charset=UTF-8');
+    $response->assertHeader('Content-Type', 'text/vnd.turbo-stream.html; charset=utf-8');
 });
 
 it('adds turbo frame header via trait', function () {
