@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;
 use Illuminate\View\Compilers\BladeCompiler;
+use Illuminate\View\View;
 use PHPUnit\Framework\Assert;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
@@ -53,6 +54,10 @@ class TurboServiceProvider extends PackageServiceProvider
 
         Response::macro('turboStream', function (StreamInterface $content, $status = 200, array $headers = []) {
             return new TurboResponse($content, $status, $headers);
+        });
+
+        Response::macro('turboStreamView', function (string|View $view, array $data = []) {
+            return turbo_stream_view($view, $data);
         });
 
         Blade::directive('turboNocache', function () {
