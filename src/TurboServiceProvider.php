@@ -65,5 +65,13 @@ class TurboServiceProvider extends PackageServiceProvider
         Blade::directive('turboRefreshScroll', function (string $scroll) {
             return "<?php echo '<meta name=\"turbo-refresh-scroll\" content=\"'.e({$scroll}).'\">' ?>";
         });
+
+        Blade::directive('domid', function (string $expression) {
+            return "<?php echo e(dom_id({$expression})); ?>";
+        });
+
+        Blade::directive('domclass', function (string $expression) {
+            return "<?php echo e(dom_class({$expression})); ?>";
+        });
     }
 }
