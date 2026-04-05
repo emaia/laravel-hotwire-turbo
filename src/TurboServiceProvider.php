@@ -2,12 +2,17 @@
 
 namespace Emaia\LaravelHotwireTurbo;
 
+use Closure;
 use Emaia\LaravelHotwireTurbo\Response as TurboResponse;
+use Emaia\LaravelHotwireTurbo\Testing\AssertableTurboStream;
+use Emaia\LaravelHotwireTurbo\Testing\ConvertTestResponseToTurboStreamCollection;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Request;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Str;
+use Illuminate\Testing\TestResponse;
 use Illuminate\View\Compilers\BladeCompiler;
+use PHPUnit\Framework\Assert;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
 
@@ -72,6 +77,42 @@ class TurboServiceProvider extends PackageServiceProvider
 
         Blade::directive('domclass', function (string $expression) {
             return "<?php echo e(dom_class({$expression})); ?>";
+        });
+
+        $this->registerTestingMacros();
+    }
+
+    private function registerTestingMacros(): void
+    {
+        if (! class_exists(TestResponse::class)) {
+            return;
+        }
+
+        TestResponse::macro('assertTurboStream', function (?Closure $callback = null): TestResponse {
+            /** @var TestResponse $this */
+            $this->assertHeader('Content-Type', 'text/vnd.turbo-stream.html; charset=UTF-8');
+
+            $streams = ConvertTestResponseToTurboStreamCollection::convert($this);
+            $assertable = new AssertableTurboStream($streams);
+
+            if ($callback) {
+                $callback($assertable);
+            }
+
+            return $this;
+        });
+
+        TestResponse::macro('assertNotTurboStream', function (): TestResponse {
+            /** @var TestResponse $this */
+            $contentType = $this->headers->get('Content-Type', '');
+
+            Assert::assertStringNotContainsString(
+                'text/vnd.turbo-stream.html',
+                $contentType,
+                'Response Content-Type should not be a Turbo Stream.',
+            );
+
+            return $this;
         });
     }
 }

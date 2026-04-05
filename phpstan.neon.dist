@@ -10,3 +10,4 @@ parameters:
     checkModelProperties: true
     ignoreErrors:
             - '#Unsafe usage of new static\(\)#'
+            - '#Trait .+ is used zero times and is not analysed#'
