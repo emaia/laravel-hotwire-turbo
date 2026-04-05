@@ -9,8 +9,6 @@ The purpose of this package is to facilitate the use of [Turbo](https://turbo.ho
 
 ## Installation
 
-You can install the package via composer:
-
 ```bash
 composer require emaia/laravel-hotwire-turbo
 ```
@@ -19,7 +17,7 @@ composer require emaia/laravel-hotwire-turbo
 
 ### Turbo Stream Actions
 
-The package supports all Turbo Stream actions via the `Action` enum:
+All Turbo 8 stream actions are supported:
 
 | Action | Description |
 |--------|-------------|
@@ -35,7 +33,7 @@ The package supports all Turbo Stream actions via the `Action` enum:
 
 ### Fluent Builder (Recommended)
 
-The `turbo_stream()` helper provides a chainable API with zero imports needed:
+The `turbo_stream()` helper provides a chainable API with zero imports:
 
 ```php
 return turbo_stream()
@@ -45,12 +43,50 @@ return turbo_stream()
     ->respond();
 ```
 
-Pass a custom status code if needed:
+With custom status code:
 
 ```php
 return turbo_stream()
     ->replace('form', view('form', ['errors' => $errors]))
     ->respond(422);
+```
+
+### DOM Identification
+
+Generate consistent DOM IDs and CSS classes from your Eloquent models:
+
+```php
+$message = Message::find(15);
+
+dom_id($message)            // "message_15"
+dom_id($message, 'edit')    // "edit_message_15"
+dom_class($message)         // "message"
+dom_class($message, 'edit') // "edit_message"
+
+// New records (no key yet)
+dom_id(new Message)          // "create_message"
+dom_id(new Message, 'new')   // "new_message"
+```
+
+Use in Blade templates with the `@domid` and `@domclass` directives:
+
+```blade
+<div id="@domid($message)">
+    {{ $message->body }}
+</div>
+
+<div id="@domid($message, 'edit')" class="@domclass($message)">
+    {{-- edit form --}}
+</div>
+```
+
+Combine with streams for consistent targeting:
+
+```php
+return turbo_stream()
+    ->append('messages', view('messages.item', compact('message')))
+    ->remove(dom_id($message, 'form'))
+    ->respond();
 ```
 
 ### Creating Individual Streams
@@ -71,7 +107,7 @@ Stream::morph('profile', view('users.profile', ['user' => $user]))
 Stream::refresh()
 ```
 
-Or use the constructor directly with the `Action` enum:
+Or use the constructor with the `Action` enum:
 
 ```php
 use Emaia\LaravelHotwireTurbo\Enums\Action;
@@ -86,7 +122,7 @@ $stream = new Stream(
 
 ### Targeting Multiple Elements (CSS Selector)
 
-Use `targets` to target multiple DOM elements via CSS selector instead of a single ID:
+Use `targets` to target multiple DOM elements via CSS selector:
 
 ```php
 $stream = new Stream(
@@ -119,9 +155,9 @@ $streams = StreamCollection::make()
 return response()->turboStream($streams);
 ```
 
-### Returning Turbo Stream Responses
+### Turbo Stream Responses
 
-The package adds a `turboStream` macro to Laravel's response factory. It automatically sets the `Content-Type: text/vnd.turbo-stream.html` header:
+The package adds macros to Laravel's response factory. The `Content-Type: text/vnd.turbo-stream.html` header is set automatically:
 
 ```php
 // Single stream
@@ -129,19 +165,38 @@ return response()->turboStream(
     Stream::replace('todo-item-1', view('todos.item', ['todo' => $todo]))
 );
 
-// Multiple streams
-return response()->turboStream($streamCollection);
-
 // With custom status code
-return response()->turboStream($stream, 201);
+return response()->turboStream($stream, 422);
+```
+
+### Turbo Stream Views
+
+For complex responses with multiple streams, write them in a Blade template and return with `turbo_stream_view()`:
+
+```php
+// Controller
+return turbo_stream_view('messages.streams.created', compact('message', 'count'));
+
+// Or via macro
+return response()->turboStreamView('messages.streams.created', compact('message', 'count'));
+```
+
+```blade
+{{-- resources/views/messages/streams/created.blade.php --}}
+<x-turbo::stream action="append" target="messages">
+    @include('messages._message', ['message' => $message])
+</x-turbo::stream>
+
+<x-turbo::stream action="update" target="message-count">
+    <span>{{ $count }}</span>
+</x-turbo::stream>
+
+<x-turbo::stream action="remove" target="new-message-form" />
 ```
 
 ### Detecting Turbo Requests
 
-The package adds macros to Laravel's `Request` to detect Turbo-specific headers:
-
 ```php
-// Check if the request accepts Turbo Stream responses
 if (request()->wantsTurboStream()) {
     return turbo_stream()
         ->replace('todo-1', view('todos.item', ['todo' => $todo]))
@@ -165,7 +220,7 @@ if (request()->wasFromTurboFrame('modal')) {
 
 ### Form Validation with Turbo Frames
 
-Extend `TurboFormRequest` instead of `FormRequest` to handle validation errors correctly within Turbo Frames. When validation fails inside a Turbo Frame, it redirects to the previous URL so the frame can re-render with errors:
+Extend `TurboFormRequest` to handle validation errors correctly within Turbo Frames. When validation fails, it redirects to the previous URL so the frame re-renders with errors:
 
 ```php
 use Emaia\LaravelHotwireTurbo\Http\Requests\TurboFormRequest;
@@ -186,13 +241,9 @@ class UpdateProfileRequest extends TurboFormRequest
 
 #### Turbo Stream
 
-Use the `<x-turbo::stream>` component directly in your views:
-
 ```blade
 <x-turbo::stream action="append" target="messages">
-    <div class="message">
-        {{ $message->body }}
-    </div>
+    <div class="message">{{ $message->body }}</div>
 </x-turbo::stream>
 
 <x-turbo::stream action="remove" target="notification-{{ $id }}" />
@@ -204,8 +255,6 @@ Use the `<x-turbo::stream>` component directly in your views:
 ```
 
 #### Turbo Frame
-
-Use the `<x-turbo::frame>` component to create Turbo Frames:
 
 ```blade
 {{-- Basic frame --}}
@@ -223,7 +272,7 @@ Use the `<x-turbo::frame>` component to create Turbo Frames:
     <a href="/dashboard">Dashboard</a>
 </x-turbo::frame>
 
-{{-- Disabled frame (no navigation) --}}
+{{-- Disabled frame --}}
 <x-turbo::frame id="preview" :disabled="true">
     <p>This frame won't navigate.</p>
 </x-turbo::frame>
@@ -231,20 +280,13 @@ Use the `<x-turbo::frame>` component to create Turbo Frames:
 
 ### Turbo Drive Blade Directives
 
-Control Turbo Drive behavior with Blade directives in your layout's `<head>`:
+Control Turbo Drive behavior in your layout's `<head>`:
 
 ```blade
 <head>
-    {{-- Exclude page from Turbo's cache --}}
     @turboNocache
-
-    {{-- Don't show cached preview on revisit --}}
     @turboNoPreview
-
-    {{-- Use morphing for page refreshes (Turbo 8) --}}
     @turboRefreshMethod('morph')
-
-    {{-- Preserve scroll position on refresh --}}
     @turboRefreshScroll('preserve')
 </head>
 ```
@@ -282,7 +324,7 @@ class MessageController extends Controller
 
         if (request()->wantsTurboStream()) {
             return turbo_stream()
-                ->remove("message-{$message->id}")
+                ->remove(dom_id($message))
                 ->respond();
         }
 
@@ -292,6 +334,70 @@ class MessageController extends Controller
 ```
 
 ## Testing
+
+The package provides testing utilities for asserting Turbo Stream responses.
+
+### Setup
+
+Add the `InteractsWithTurbo` trait to your test class:
+
+```php
+use Emaia\LaravelHotwireTurbo\Testing\InteractsWithTurbo;
+
+class MessageControllerTest extends TestCase
+{
+    use InteractsWithTurbo;
+}
+```
+
+### Making Turbo Requests
+
+```php
+// Send request with Turbo Stream Accept header
+$this->turbo()->post('/messages', ['body' => 'Hello']);
+
+// Send request from a specific Turbo Frame
+$this->fromTurboFrame('modal')->get('/messages/create');
+
+// Combine both
+$this->turbo()->fromTurboFrame('modal')->post('/messages', $data);
+```
+
+### Asserting Responses
+
+```php
+// Assert the response is a Turbo Stream
+$this->turbo()
+    ->post('/messages', ['body' => 'Hello'])
+    ->assertTurboStream();
+
+// Assert stream count and match specific streams
+$this->turbo()
+    ->delete("/messages/{$message->id}")
+    ->assertTurboStream(fn ($streams) => $streams
+        ->has(1)
+        ->hasTurboStream(fn ($stream) => $stream
+            ->where('action', 'remove')
+            ->where('target', dom_id($message))
+        )
+    );
+
+// Assert content inside a stream
+$this->turbo()
+    ->post('/messages', ['body' => 'Hello'])
+    ->assertTurboStream(fn ($streams) => $streams
+        ->hasTurboStream(fn ($stream) => $stream
+            ->where('action', 'append')
+            ->where('target', 'messages')
+            ->see('Hello')
+        )
+    );
+
+// Assert response is NOT a Turbo Stream
+$this->get('/messages')->assertNotTurboStream();
+```
+
+## Running Tests
 
 ```bash
 composer test
