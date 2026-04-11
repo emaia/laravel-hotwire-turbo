@@ -3,8 +3,9 @@
 namespace Emaia\LaravelHotwireTurbo;
 
 use Emaia\LaravelHotwireTurbo\Response as TurboResponse;
+use Illuminate\Contracts\Support\Responsable;
 
-class TurboStreamBuilder implements StreamInterface
+class TurboStreamBuilder implements Responsable, StreamInterface
 {
     protected StreamCollection $streams;
 
@@ -91,8 +92,13 @@ class TurboStreamBuilder implements StreamInterface
         return $this->streams->render();
     }
 
-    public function respond(int $status = 200, array $headers = []): TurboResponse
+    public function withResponse(int $status = 200, array $headers = []): TurboResponse
     {
         return new TurboResponse($this->streams, $status, $headers);
+    }
+
+    public function toResponse($request): TurboResponse
+    {
+        return $this->withResponse();
     }
 }

@@ -3,6 +3,8 @@
 use Emaia\LaravelHotwireTurbo\Response;
 use Emaia\LaravelHotwireTurbo\StreamInterface;
 use Emaia\LaravelHotwireTurbo\TurboStreamBuilder;
+use Illuminate\Contracts\Support\Responsable;
+use Illuminate\Support\Facades\Route;
 
 it('chains multiple stream actions', function () {
     $builder = turbo_stream()
@@ -18,10 +20,10 @@ it('chains multiple stream actions', function () {
         ->toContain('action="update"');
 });
 
-it('returns a TurboResponse from respond()', function () {
+it('returns a TurboResponse from withResponse()', function () {
     $response = turbo_stream()
         ->append('messages', '<p>New</p>')
-        ->respond();
+        ->withResponse();
 
     expect($response)
         ->toBeInstanceOf(Response::class)
@@ -29,10 +31,10 @@ it('returns a TurboResponse from respond()', function () {
         ->and($response->getStatusCode())->toBe(200);
 });
 
-it('accepts custom status code in respond()', function () {
+it('accepts custom status code in withResponse()', function () {
     $response = turbo_stream()
         ->replace('form', '<form></form>')
-        ->respond(422);
+        ->withResponse(422);
 
     expect($response->getStatusCode())->toBe(422);
 });
@@ -79,4 +81,21 @@ it('works with response()->turboStream() macro', function () {
 
 it('returns instance from helper function', function () {
     expect(turbo_stream())->toBeInstanceOf(TurboStreamBuilder::class);
+});
+
+it('implements Responsable', function () {
+    $builder = turbo_stream()->append('x', 'y');
+
+    expect($builder)->toBeInstanceOf(Responsable::class);
+});
+
+it('can be returned directly as a response', function () {
+    Route::get('/turbo-stream-direct', function () {
+        return turbo_stream()->append('messages', '<p>Hello</p>');
+    });
+
+    $response = $this->get('/turbo-stream-direct');
+
+    expect($response->headers->get('Content-Type'))->toContain('text/vnd.turbo-stream.html')
+        ->and($response->getContent())->toContain('action="append"');
 });

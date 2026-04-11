@@ -12,7 +12,7 @@ beforeEach(function () {
         return turbo_stream()
             ->append('messages', '<p>Hello</p>')
             ->remove('modal')
-            ->respond();
+            ->withResponse();
     });
 
     Route::get('/normal-test', function () {

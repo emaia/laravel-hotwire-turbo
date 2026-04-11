@@ -39,16 +39,15 @@ The `turbo_stream()` helper provides a chainable API with zero imports:
 return turbo_stream()
     ->append('messages', view('messages.item', compact('message')))
     ->remove('modal')
-    ->update('counter', '<span>42</span>')
-    ->respond();
+    ->update('counter', '<span>42</span>');
 ```
 
-With custom status code:
+Use `withResponse()` when you need custom status code or headers:
 
 ```php
 return turbo_stream()
     ->replace('form', view('form', ['errors' => $errors]))
-    ->respond(422);
+    ->withResponse(422);
 ```
 
 ### DOM Identification
@@ -85,8 +84,7 @@ Combine with streams for consistent targeting:
 ```php
 return turbo_stream()
     ->append('messages', view('messages.item', compact('message')))
-    ->remove(dom_id($message, 'form'))
-    ->respond();
+    ->remove(dom_id($message, 'form'));
 ```
 
 ### Creating Individual Streams
@@ -200,7 +198,7 @@ Use explicit request checks in your controllers to return Turbo Streams only whe
 
 ```php
 if (request()->wantsTurboStream()) {
-    return turbo_stream()->remove(dom_id($message))->respond();
+    return turbo_stream()->remove(dom_id($message));
 }
 
 return redirect()->route('messages.index');
@@ -210,7 +208,7 @@ To scope behavior to a specific Turbo Frame:
 
 ```php
 if (request()->wantsTurboStream() && request()->wasFromTurboFrame('modal')) {
-    return turbo_stream()->update('modal-content', view('messages.edit', compact('message')))->respond();
+    return turbo_stream()->update('modal-content', view('messages.edit', compact('message')));
 }
 
 return view('messages.edit', compact('message'));
@@ -231,8 +229,7 @@ Stream::action('console-log', 'debug', '<p>Debug info</p>', [
 // Via the fluent builder
 return turbo_stream()
     ->action('notification', 'alerts', '<p>Saved!</p>', ['data-timeout' => '3000'])
-    ->remove('modal')
-    ->respond();
+    ->remove('modal');
 ```
 
 ### Detecting Turbo Requests
@@ -240,8 +237,7 @@ return turbo_stream()
 ```php
 if (request()->wantsTurboStream()) {
     return turbo_stream()
-        ->replace('todo-1', view('todos.item', ['todo' => $todo]))
-        ->respond();
+        ->replace('todo-1', view('todos.item', ['todo' => $todo]));
 }
 
 return redirect()->back();
@@ -352,8 +348,7 @@ class MessageController extends Controller
             return turbo_stream()
                 ->append('messages', view('messages.item', compact('message')))
                 ->update('message-form', view('messages.form'))
-                ->update('message-count', '<span>' . Message::count() . '</span>')
-                ->respond();
+                ->update('message-count', '<span>' . Message::count() . '</span>');
         }
 
         return redirect()->route('messages.index');
@@ -364,7 +359,7 @@ class MessageController extends Controller
         $message->delete();
 
         if (request()->wantsTurboStream()) {
-            return turbo_stream()->remove(dom_id($message))->respond();
+            return turbo_stream()->remove(dom_id($message));
         }
 
         return redirect()->route('messages.index');
@@ -373,7 +368,7 @@ class MessageController extends Controller
     public function edit(Message $message)
     {
         if (request()->wantsTurboStream() && request()->wasFromTurboFrame('modal')) {
-            return turbo_stream()->update('modal-content', view('messages.edit', compact('message')))->respond();
+            return turbo_stream()->update('modal-content', view('messages.edit', compact('message')));
         }
 
         return view('messages.edit', compact('message'));
