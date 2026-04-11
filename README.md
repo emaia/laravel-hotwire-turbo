@@ -196,34 +196,24 @@ return response()->turboStreamView('messages.streams.created', compact('message'
 
 ### Conditional Turbo Responses
 
-`Turbo::if()` eliminates the most common if/else pattern in Turbo controllers. It returns the stream when the request wants Turbo, or the fallback otherwise:
+Use explicit request checks in your controllers to return Turbo Streams only when appropriate:
 
 ```php
-use Emaia\LaravelHotwireTurbo\Turbo;
+if (request()->wantsTurboStream()) {
+    return turbo_stream()->remove(dom_id($message))->respond();
+}
 
-return Turbo::if(
-    stream: turbo_stream()->remove(dom_id($message))->respond(),
-    fallback: redirect()->route('messages.index'),
-);
+return redirect()->route('messages.index');
 ```
 
-You can also pass a `StreamInterface` directly (it will be wrapped in a `TurboResponse` automatically):
+To scope behavior to a specific Turbo Frame:
 
 ```php
-return Turbo::if(
-    stream: turbo_stream()->remove(dom_id($message)),
-    fallback: redirect()->route('messages.index'),
-);
-```
+if (request()->wantsTurboStream() && request()->wasFromTurboFrame('modal')) {
+    return turbo_stream()->update('modal-content', view('messages.edit', compact('message')))->respond();
+}
 
-Scope the response to a specific Turbo Frame with the `frame` parameter. The stream is returned only when the request both wants Turbo **and** comes from the matching frame:
-
-```php
-return Turbo::if(
-    stream: turbo_stream()->remove('modal-content'),
-    fallback: redirect()->route('messages.index'),
-    frame: 'modal',
-);
+return view('messages.edit', compact('message'));
 ```
 
 ### Custom Stream Actions
@@ -352,41 +342,41 @@ Control Turbo Drive behavior in your layout's `<head>`:
 ### Full Controller Example
 
 ```php
-use Emaia\LaravelHotwireTurbo\Turbo;
-
 class MessageController extends Controller
 {
     public function store(Request $request)
     {
         $message = Message::create($request->validated());
 
-        return Turbo::if(
-            stream: turbo_stream()
+        if (request()->wantsTurboStream()) {
+            return turbo_stream()
                 ->append('messages', view('messages.item', compact('message')))
                 ->update('message-form', view('messages.form'))
                 ->update('message-count', '<span>' . Message::count() . '</span>')
-                ->respond(),
-            fallback: redirect()->route('messages.index'),
-        );
+                ->respond();
+        }
+
+        return redirect()->route('messages.index');
     }
 
     public function destroy(Message $message)
     {
         $message->delete();
 
-        return Turbo::if(
-            stream: turbo_stream()->remove(dom_id($message)),
-            fallback: redirect()->route('messages.index'),
-        );
+        if (request()->wantsTurboStream()) {
+            return turbo_stream()->remove(dom_id($message))->respond();
+        }
+
+        return redirect()->route('messages.index');
     }
 
     public function edit(Message $message)
     {
-        return Turbo::if(
-            stream: turbo_stream()->update('modal-content', view('messages.edit', compact('message'))),
-            fallback: view('messages.edit', compact('message')),
-            frame: 'modal',
-        );
+        if (request()->wantsTurboStream() && request()->wasFromTurboFrame('modal')) {
+            return turbo_stream()->update('modal-content', view('messages.edit', compact('message')))->respond();
+        }
+
+        return view('messages.edit', compact('message'));
     }
 }
 ```
