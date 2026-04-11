@@ -3,6 +3,7 @@
 namespace Emaia\LaravelHotwireTurbo;
 
 use Emaia\LaravelHotwireTurbo\Enums\Action;
+use Illuminate\View\ComponentAttributeBag;
 use Illuminate\View\View;
 use InvalidArgumentException;
 use Throwable;
@@ -21,7 +22,10 @@ class Stream implements StreamInterface
         protected string $targets = '',
         protected array $attributes = [],
     ) {
-        if (empty($target) && empty($targets)) {
+        $isRefresh = $action === Action::REFRESH
+            || (is_string($action) && strtolower($action) === Action::REFRESH->value);
+
+        if (! $isRefresh && empty($target) && empty($targets)) {
             throw new InvalidArgumentException('Either target or targets must be provided');
         }
 
@@ -80,7 +84,7 @@ class Stream implements StreamInterface
 
     public static function refresh(): static
     {
-        return new static(Action::REFRESH, 'body');
+        return new static(Action::REFRESH);
     }
 
     /**
@@ -88,6 +92,14 @@ class Stream implements StreamInterface
      */
     public function render(): string
     {
-        return view('turbo::turbo-stream', get_object_vars($this))->render();
+        return view('turbo::components.stream', [
+            'action' => $this->action,
+            'target' => $this->target ?: null,
+            'targets' => $this->targets ?: null,
+            'content' => $this->content,
+            'attributes' => new ComponentAttributeBag(
+                array_map(fn ($v) => e((string) $v), $this->attributes)
+            ),
+        ])->render();
     }
 }

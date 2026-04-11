@@ -45,6 +45,21 @@ it('renders remove action without template', function () {
         ->not->toContain('<template>');
 });
 
+it('renders refresh action without template or target', function () {
+    $html = Stream::refresh()->render();
+
+    expect($html)
+        ->toContain('action="refresh"')
+        ->not->toContain('target=')
+        ->not->toContain('<template>');
+});
+
+it('allows refresh action with no target without throwing', function () {
+    $stream = new Stream(Action::REFRESH);
+
+    expect($stream->render())->toContain('action="refresh"');
+});
+
 it('supports all turbo 8 actions', function (Action $action) {
     $stream = new Stream($action, 'target', 'content');
 
@@ -105,5 +120,66 @@ describe('fluent factory methods', function () {
     it('creates refresh stream', function () {
         $html = Stream::refresh()->render();
         expect($html)->toContain('action="refresh"');
+    });
+});
+
+describe('stream component blade usage', function () {
+    it('renders with method="morph" for morphing replace', function () {
+        $html = Blade::render('<x-turbo::stream action="replace" target="card" method="morph"><p>New</p></x-turbo::stream>');
+
+        expect($html)
+            ->toContain('action="replace"')
+            ->toContain('method="morph"')
+            ->toContain('<p>New</p>');
+    });
+
+    it('renders with method="morph" for morphing update', function () {
+        $html = Blade::render('<x-turbo::stream action="update" target="list" method="morph"><li>X</li></x-turbo::stream>');
+
+        expect($html)
+            ->toContain('action="update"')
+            ->toContain('method="morph"');
+    });
+
+    it('renders refresh with request-id for debouncing', function () {
+        $html = Blade::render('<x-turbo::stream action="refresh" request-id="abcd-1234" />');
+
+        expect($html)
+            ->toContain('action="refresh"')
+            ->toContain('request-id="abcd-1234"')
+            ->not->toContain('<template>');
+    });
+
+    it('renders refresh with method and scroll', function () {
+        $html = Blade::render('<x-turbo::stream action="refresh" method="morph" scroll="preserve" />');
+
+        expect($html)
+            ->toContain('method="morph"')
+            ->toContain('scroll="preserve"')
+            ->not->toContain('<template>');
+    });
+
+    it('accepts Action enum for action prop', function () {
+        $html = Blade::render(
+            '<x-turbo::stream :action="$action" target="box">Hi</x-turbo::stream>',
+            ['action' => Action::APPEND],
+        );
+
+        expect($html)->toContain('action="append"');
+    });
+
+    it('passes through arbitrary extra attributes', function () {
+        $html = Blade::render('<x-turbo::stream action="append" target="list" data-controller="logger">Hi</x-turbo::stream>');
+
+        expect($html)->toContain('data-controller="logger"');
+    });
+
+    it('does not emit omitted optional attributes', function () {
+        $html = Blade::render('<x-turbo::stream action="remove" target="item" />');
+
+        expect($html)
+            ->not->toContain('method=')
+            ->not->toContain('scroll=')
+            ->not->toContain('request-id=');
     });
 });

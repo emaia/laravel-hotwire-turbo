@@ -7,6 +7,30 @@
 
 The purpose of this package is to facilitate the use of [Turbo](https://turbo.hotwired.dev/) ([Hotwire](https://hotwired.dev/)) in a Laravel app.
 
+## Table of Contents
+
+- [Installation](#installation)
+- [Usage](#usage)
+  - [Turbo Stream Actions](#turbo-stream-actions)
+  - [Fluent Builder](#fluent-builder-recommended)
+  - [DOM Identification](#dom-identification)
+  - [Creating Individual Streams](#creating-individual-streams)
+  - [Targeting Multiple Elements](#targeting-multiple-elements-css-selector)
+  - [Stream Collections](#stream-collections)
+  - [Turbo Stream Responses](#turbo-stream-responses)
+  - [Turbo Stream Views](#turbo-stream-views)
+  - [Conditional Turbo Responses](#conditional-turbo-responses)
+  - [Custom Stream Actions](#custom-stream-actions)
+  - [Detecting Turbo Requests](#detecting-turbo-requests)
+  - [Form Validation with Turbo Frames](#form-validation-with-turbo-frames)
+  - [Blade Components](#blade-components)
+    - [Turbo Stream](#turbo-stream)
+    - [Turbo Frame](#turbo-frame)
+  - [Turbo Drive Blade Directives](#turbo-drive-blade-directives)
+  - [Full Controller Example](#full-controller-example)
+- [Testing](#testing)
+- [Running Tests](#running-tests)
+
 ## Installation
 
 ```bash
@@ -291,6 +315,48 @@ class UpdateProfileRequest extends TurboFormRequest
 </x-turbo::stream>
 ```
 
+##### Morphing
+
+Use `method="morph"` on `replace` or `update` to apply Turbo's [morphing](https://turbo.hotwired.dev/handbook/page_refreshes) instead of a full DOM replacement:
+
+```blade
+{{-- Morph the entire element --}}
+<x-turbo::stream action="replace" method="morph" target="user-card">
+    @include('users.card', ['user' => $user])
+</x-turbo::stream>
+
+{{-- Morph only the children --}}
+<x-turbo::stream action="update" method="morph" target="message-list">
+    @each('messages.item', $messages, 'message')
+</x-turbo::stream>
+```
+
+##### Page Refresh
+
+```blade
+{{-- Basic refresh --}}
+<x-turbo::stream action="refresh" />
+
+{{-- Debounced refresh (multiple identical request-ids are coalesced) --}}
+<x-turbo::stream action="refresh" request-id="{{ $requestId }}" />
+
+{{-- Refresh with morphing and scroll preservation --}}
+<x-turbo::stream action="refresh" method="morph" scroll="preserve" />
+```
+
+##### Props reference
+
+| Prop | Description |
+|------|-------------|
+| `action` | Stream action — accepts string or `Action` enum |
+| `target` | Target DOM id |
+| `targets` | CSS selector to target multiple elements |
+| `method` | `morph` — use morphing instead of full replacement (replace/update) |
+| `scroll` | `preserve` or `reset` — scroll behavior for refresh |
+| `request-id` | Debounce key for refresh actions |
+
+Extra attributes are forwarded to the `<turbo-stream>` element (e.g. `data-controller`).
+
 #### Turbo Frame
 
 ```blade
@@ -299,12 +365,17 @@ class UpdateProfileRequest extends TurboFormRequest
     @include('users.profile', ['user' => $user])
 </x-turbo::frame>
 
-{{-- Lazy-loaded frame --}}
+{{-- Eager-loaded frame --}}
+<x-turbo::frame id="inbox" src="/messages">
+    <p>Loading...</p>
+</x-turbo::frame>
+
+{{-- Lazy-loaded frame (loads when visible in viewport) --}}
 <x-turbo::frame id="comments" src="/posts/{{ $post->id }}/comments" loading="lazy">
     <p>Loading comments...</p>
 </x-turbo::frame>
 
-{{-- Frame that navigates the whole page --}}
+{{-- Frame that navigates the whole page by default --}}
 <x-turbo::frame id="navigation" target="_top">
     <a href="/dashboard">Dashboard</a>
 </x-turbo::frame>
@@ -313,7 +384,39 @@ class UpdateProfileRequest extends TurboFormRequest
 <x-turbo::frame id="preview" :disabled="true">
     <p>This frame won't navigate.</p>
 </x-turbo::frame>
+
+{{-- Morphed on page refresh (instead of a full replacement) --}}
+<x-turbo::frame id="feed" src="/feed" refresh="morph" />
+
+{{-- Scroll into view after load --}}
+<x-turbo::frame id="results" src="/search" :autoscroll="true" autoscroll-block="start" autoscroll-behavior="smooth" />
+
+{{-- Promote navigations to browser history --}}
+<x-turbo::frame id="pager" advance="advance">
+    <a href="?page=2">Next page</a>
+</x-turbo::frame>
+
+{{-- Recursive frame --}}
+<x-turbo::frame id="recursive" src="/frame" recurse="composer" />
 ```
+
+##### Props reference
+
+| Prop | Description |
+|------|-------------|
+| `id` | Frame identifier (required) |
+| `src` | URL to load content from (eager by default) |
+| `loading` | `eager` (default) or `lazy` |
+| `target` | Default navigation target — use `_top` to navigate the whole page |
+| `disabled` | Prevents all navigation |
+| `refresh` | `morph` — use morphing when the frame reloads on page refresh |
+| `autoscroll` | Scroll the frame into view after loading |
+| `autoscroll-block` | Vertical alignment: `end` (default), `start`, `center`, `nearest` |
+| `autoscroll-behavior` | Scroll animation: `auto` (default) or `smooth` |
+| `advance` | `advance` or `replace` — promote navigations to browser history |
+| `recurse` | Frame id to recurse into when extracting content |
+
+Extra attributes are forwarded to the `<turbo-frame>` element (e.g. `class`, `data-controller`).
 
 ### Turbo Drive Blade Directives
 

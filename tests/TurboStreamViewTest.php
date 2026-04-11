@@ -4,10 +4,9 @@ use Emaia\LaravelHotwireTurbo\Enums\Action;
 use Illuminate\Support\Facades\Blade;
 
 it('returns response with turbo stream content type', function () {
-    $response = turbo_stream_view(view('turbo::turbo-stream', [
+    $response = turbo_stream_view(view('turbo::components.stream', [
         'action' => Action::APPEND,
         'target' => 'messages',
-        'targets' => '',
         'content' => '<p>Hi</p>',
     ]));
 
@@ -16,16 +15,10 @@ it('returns response with turbo stream content type', function () {
 });
 
 it('renders a view by name', function () {
-    // Register an inline view for testing
-    app('view')->addNamespace('test', __DIR__.'/views');
-
-    // Use Blade::render as a view object
     $html = Blade::render('<x-turbo::stream action="remove" target="modal" />');
-    $response = turbo_stream_view(view()->make('turbo::turbo-stream', [
+    $response = turbo_stream_view(view()->make('turbo::components.stream', [
         'action' => Action::REMOVE,
         'target' => 'modal',
-        'targets' => '',
-        'content' => '',
     ]));
 
     expect($response->getStatusCode())->toBe(200);
@@ -34,10 +27,9 @@ it('renders a view by name', function () {
 });
 
 it('accepts a View object directly', function () {
-    $view = view('turbo::turbo-stream', [
+    $view = view('turbo::components.stream', [
         'action' => Action::APPEND,
         'target' => 'list',
-        'targets' => '',
         'content' => '<li>Item</li>',
     ]);
 
@@ -49,10 +41,9 @@ it('accepts a View object directly', function () {
 });
 
 it('works via response macro', function () {
-    $response = response()->turboStreamView(view('turbo::turbo-stream', [
+    $response = response()->turboStreamView(view('turbo::components.stream', [
         'action' => Action::UPDATE,
         'target' => 'counter',
-        'targets' => '',
         'content' => '<span>42</span>',
     ]));
 
