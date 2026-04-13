@@ -154,6 +154,51 @@ describe('fluent factory methods', function () {
     });
 });
 
+describe('*All factory methods with CSS selectors', function () {
+    it('creates appendAll stream', function () {
+        $html = Stream::appendAll('.items', '<li>New</li>')->render();
+        expect($html)
+            ->toContain('action="append"')
+            ->toContain('targets=".items"')
+            ->not->toContain('target=');
+    });
+
+    it('creates prependAll stream', function () {
+        $html = Stream::prependAll('.lists', '<li>First</li>')->render();
+        expect($html)->toContain('action="prepend"')->toContain('targets=".lists"');
+    });
+
+    it('creates replaceAll stream with morph', function () {
+        $html = Stream::replaceAll('.card', '<div>New</div>', method: 'morph')->render();
+        expect($html)
+            ->toContain('action="replace"')
+            ->toContain('targets=".card"')
+            ->toContain('method="morph"');
+    });
+
+    it('creates updateAll stream', function () {
+        $html = Stream::updateAll('.badge', '<span>5</span>')->render();
+        expect($html)->toContain('action="update"')->toContain('targets=".badge"');
+    });
+
+    it('creates removeAll stream', function () {
+        $html = Stream::removeAll('.flash')->render();
+        expect($html)
+            ->toContain('action="remove"')
+            ->toContain('targets=".flash"');
+    });
+
+    it('creates afterAll stream', function () {
+        $html = Stream::afterAll('.item', '<hr>')->render();
+        expect($html)->toContain('action="after"')->toContain('targets=".item"');
+    });
+
+    it('creates beforeAll stream', function () {
+        $html = Stream::beforeAll('.item', '<hr>')->render();
+        expect($html)->toContain('action="before"')->toContain('targets=".item"');
+    });
+});
+
 describe('model-aware targets', function () {
     it('resolves model to dom_id in append', function () {
         $model = new StreamTestMessage;

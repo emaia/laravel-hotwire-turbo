@@ -66,6 +66,55 @@ class TurboStreamBuilder implements Responsable, StreamInterface
         return $this;
     }
 
+    public function appendAll(string $targets, mixed $content = ''): static
+    {
+        $this->streams->add(Stream::appendAll($targets, $content));
+
+        return $this;
+    }
+
+    public function prependAll(string $targets, mixed $content = ''): static
+    {
+        $this->streams->add(Stream::prependAll($targets, $content));
+
+        return $this;
+    }
+
+    public function replaceAll(string $targets, mixed $content = '', ?string $method = null): static
+    {
+        $this->streams->add(Stream::replaceAll($targets, $content, $method));
+
+        return $this;
+    }
+
+    public function updateAll(string $targets, mixed $content = '', ?string $method = null): static
+    {
+        $this->streams->add(Stream::updateAll($targets, $content, $method));
+
+        return $this;
+    }
+
+    public function removeAll(string $targets): static
+    {
+        $this->streams->add(Stream::removeAll($targets));
+
+        return $this;
+    }
+
+    public function afterAll(string $targets, mixed $content = ''): static
+    {
+        $this->streams->add(Stream::afterAll($targets, $content));
+
+        return $this;
+    }
+
+    public function beforeAll(string $targets, mixed $content = ''): static
+    {
+        $this->streams->add(Stream::beforeAll($targets, $content));
+
+        return $this;
+    }
+
     public function refresh(?string $method = null, ?string $scroll = null, ?string $requestId = null): static
     {
         $this->streams->add(Stream::refresh($method, $scroll, $requestId));

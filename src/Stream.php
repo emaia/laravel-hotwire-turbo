@@ -87,6 +87,41 @@ class Stream implements StreamInterface
         return new static(Action::BEFORE, self::resolveTarget($target), $content);
     }
 
+    public static function appendAll(string $targets, mixed $content = ''): static
+    {
+        return new static(Action::APPEND, content: $content, targets: $targets);
+    }
+
+    public static function prependAll(string $targets, mixed $content = ''): static
+    {
+        return new static(Action::PREPEND, content: $content, targets: $targets);
+    }
+
+    public static function replaceAll(string $targets, mixed $content = '', ?string $method = null): static
+    {
+        return new static(Action::REPLACE, content: $content, targets: $targets, attributes: array_filter(['method' => $method]));
+    }
+
+    public static function updateAll(string $targets, mixed $content = '', ?string $method = null): static
+    {
+        return new static(Action::UPDATE, content: $content, targets: $targets, attributes: array_filter(['method' => $method]));
+    }
+
+    public static function removeAll(string $targets): static
+    {
+        return new static(Action::REMOVE, targets: $targets);
+    }
+
+    public static function afterAll(string $targets, mixed $content = ''): static
+    {
+        return new static(Action::AFTER, content: $content, targets: $targets);
+    }
+
+    public static function beforeAll(string $targets, mixed $content = ''): static
+    {
+        return new static(Action::BEFORE, content: $content, targets: $targets);
+    }
+
     public static function refresh(?string $method = null, ?string $scroll = null, ?string $requestId = null): static
     {
         return new static(Action::REFRESH, attributes: array_filter([

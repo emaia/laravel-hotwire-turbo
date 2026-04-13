@@ -154,6 +154,65 @@ it('accepts model in replace with morph', function () {
         ->toContain('method="morph"');
 });
 
+it('supports appendAll with CSS selector', function () {
+    $html = turbo_stream()->appendAll('.items', '<li>New</li>')->render();
+    expect($html)->toContain('action="append"')->toContain('targets=".items"');
+});
+
+it('supports prependAll with CSS selector', function () {
+    $html = turbo_stream()->prependAll('.lists', '<li>First</li>')->render();
+    expect($html)->toContain('action="prepend"')->toContain('targets=".lists"');
+});
+
+it('supports replaceAll with CSS selector', function () {
+    $html = turbo_stream()->replaceAll('.card', '<div>New</div>')->render();
+    expect($html)->toContain('action="replace"')->toContain('targets=".card"');
+});
+
+it('supports updateAll with CSS selector', function () {
+    $html = turbo_stream()->updateAll('.badge', '<span>5</span>')->render();
+    expect($html)->toContain('action="update"')->toContain('targets=".badge"');
+});
+
+it('supports removeAll with CSS selector', function () {
+    $html = turbo_stream()->removeAll('.flash')->render();
+    expect($html)->toContain('action="remove"')->toContain('targets=".flash"');
+});
+
+it('supports afterAll with CSS selector', function () {
+    $html = turbo_stream()->afterAll('.item', '<hr>')->render();
+    expect($html)->toContain('action="after"')->toContain('targets=".item"');
+});
+
+it('supports beforeAll with CSS selector', function () {
+    $html = turbo_stream()->beforeAll('.entry', '<hr>')->render();
+    expect($html)->toContain('action="before"')->toContain('targets=".entry"');
+});
+
+it('supports replaceAll with morph', function () {
+    $html = turbo_stream()->replaceAll('.card', '<div>New</div>', method: 'morph')->render();
+    expect($html)->toContain('targets=".card"')->toContain('method="morph"');
+});
+
+it('supports updateAll with morph', function () {
+    $html = turbo_stream()->updateAll('.badge', '<span>5</span>', method: 'morph')->render();
+    expect($html)->toContain('targets=".badge"')->toContain('method="morph"');
+});
+
+it('chains multiple *All methods', function () {
+    $html = turbo_stream()
+        ->appendAll('.notifications', '<p>Alert</p>')
+        ->updateAll('.badge', '<span>5</span>')
+        ->removeAll('.flash')
+        ->render();
+
+    expect($html)
+        ->toContain('targets=".notifications"')
+        ->toContain('targets=".badge"')
+        ->toContain('targets=".flash"')
+        ->not->toContain('target=');
+});
+
 it('implements StreamInterface', function () {
     $builder = turbo_stream()->append('x', 'y');
 
