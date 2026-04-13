@@ -2,6 +2,12 @@
 
 All notable changes to `laravel-hotwire-turbo` will be documented in this file.
 
+## 0.8.5 - 2026-04-13
+
+### Added
+
+- **Turbo Drive redirect 303** — New `TurboMiddleware` automatically converts redirects to HTTP 303 (See Other) for Turbo visits, which is required by Turbo Drive for form submission redirects. Enabled by default via `auto_redirect_303` config option. Can be disabled and registered manually on specific routes.
+
 ## 0.8.4 - 2026-04-13
 
 **Full Changelog**: https://github.com/emaia/laravel-hotwire-turbo/compare/v0.8.3...v0.8.4

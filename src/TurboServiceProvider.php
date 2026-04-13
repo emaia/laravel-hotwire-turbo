@@ -3,10 +3,12 @@
 namespace Emaia\LaravelHotwireTurbo;
 
 use Closure;
+use Emaia\LaravelHotwireTurbo\Http\Middleware\TurboMiddleware;
 use Emaia\LaravelHotwireTurbo\Models\Name;
 use Emaia\LaravelHotwireTurbo\Response as TurboResponse;
 use Emaia\LaravelHotwireTurbo\Testing\AssertableTurboStream;
 use Emaia\LaravelHotwireTurbo\Testing\ConvertTestResponseToTurboStreamCollection;
+use Illuminate\Contracts\Http\Kernel;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Request;
 use Illuminate\Support\Facades\Response;
@@ -35,6 +37,10 @@ class TurboServiceProvider extends PackageServiceProvider
 
     public function packageBooted(): void
     {
+        if (config('turbo.auto_redirect_303', true)) {
+            $this->app->make(Kernel::class)->pushMiddleware(TurboMiddleware::class);
+        }
+
         $modelNamespaces = config('turbo.model_namespaces');
 
         if (is_array($modelNamespaces)) {

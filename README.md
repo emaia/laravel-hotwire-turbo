@@ -32,6 +32,7 @@ The purpose of this package is to facilitate the use of [Turbo](https://turbo.ho
     - [Turbo Stream](#turbo-stream)
     - [Turbo Frame](#turbo-frame)
   - [Turbo Drive Blade Directives](#turbo-drive-blade-directives)
+  - [Turbo Drive Redirect 303](#turbo-drive-redirect-303)
   - [Full Controller Example](#full-controller-example)
 - [Configuration](#configuration)
 - [Testing](#testing)
@@ -508,6 +509,28 @@ Control Turbo Drive behavior in your layout's `<head>`:
 | `@turboRefreshMethod('morph')` | `<meta name="turbo-refresh-method" content="morph">` |
 | `@turboRefreshScroll('preserve')` | `<meta name="turbo-refresh-scroll" content="preserve">` |
 
+### Turbo Drive Redirect 303
+
+Turbo Drive requires form submission redirects to use HTTP status **303 (See Other)** instead of the default 302. Without this, Turbo Drive will not follow the redirect after a form submission.
+
+The package automatically registers a global middleware that converts all redirects to 303 when the request comes from Turbo (either Turbo Drive or Turbo Frame). This is enabled by default and requires no setup.
+
+To disable the automatic middleware and register it manually on specific routes:
+
+```php
+// config/turbo.php
+'auto_redirect_303' => false,
+```
+
+```php
+// bootstrap/app.php or route groups
+use Emaia\LaravelHotwireTurbo\Http\Middleware\TurboMiddleware;
+
+Route::middleware(TurboMiddleware::class)->group(function () {
+    Route::post('/posts', [PostController::class, 'store']);
+});
+```
+
 ### Full Controller Example
 
 ```php
@@ -557,6 +580,10 @@ return [
     // Namespaces stripped when generating DOM IDs from models.
     // Customize if your models live outside App\Models\.
     'model_namespaces' => ['App\\Models\\', 'App\\'],
+
+    // Automatically convert redirects to 303 for Turbo visits.
+    // Set to false to register the TurboMiddleware manually.
+    'auto_redirect_303' => true,
 ];
 ```
 
