@@ -52,14 +52,14 @@ class Stream implements StreamInterface
         return new static(Action::PREPEND, $target, $content);
     }
 
-    public static function replace(string $target, mixed $content = ''): static
+    public static function replace(string $target, mixed $content = '', ?string $method = null): static
     {
-        return new static(Action::REPLACE, $target, $content);
+        return new static(Action::REPLACE, $target, $content, attributes: array_filter(['method' => $method]));
     }
 
-    public static function update(string $target, mixed $content = ''): static
+    public static function update(string $target, mixed $content = '', ?string $method = null): static
     {
-        return new static(Action::UPDATE, $target, $content);
+        return new static(Action::UPDATE, $target, $content, attributes: array_filter(['method' => $method]));
     }
 
     public static function remove(string $target): static
@@ -77,14 +77,13 @@ class Stream implements StreamInterface
         return new static(Action::BEFORE, $target, $content);
     }
 
-    public static function morph(string $target, mixed $content = ''): static
+    public static function refresh(?string $method = null, ?string $scroll = null, ?string $requestId = null): static
     {
-        return new static(Action::MORPH, $target, $content);
-    }
-
-    public static function refresh(): static
-    {
-        return new static(Action::REFRESH);
+        return new static(Action::REFRESH, attributes: array_filter([
+            'method' => $method,
+            'scroll' => $scroll,
+            'request-id' => $requestId,
+        ]));
     }
 
     /**
@@ -92,14 +91,26 @@ class Stream implements StreamInterface
      */
     public function render(): string
     {
+        $viewProps = array_filter([
+            'method' => $this->attributes['method'] ?? null,
+            'scroll' => $this->attributes['scroll'] ?? null,
+            'requestId' => $this->attributes['request-id'] ?? null,
+        ]);
+
+        $extraAttributes = array_diff_key(
+            $this->attributes,
+            array_flip(['method', 'scroll', 'request-id']),
+        );
+
         return view('turbo::components.stream', [
             'action' => $this->action,
             'target' => $this->target ?: null,
             'targets' => $this->targets ?: null,
             'content' => $this->content,
             'attributes' => new ComponentAttributeBag(
-                array_map(fn ($v) => e((string) $v), $this->attributes)
+                array_map(fn ($v) => e((string) $v), $extraAttributes)
             ),
+            ...$viewProps,
         ])->render();
     }
 }

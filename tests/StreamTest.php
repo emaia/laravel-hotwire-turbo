@@ -72,7 +72,6 @@ it('supports all turbo 8 actions', function (Action $action) {
     Action::REMOVE,
     Action::AFTER,
     Action::BEFORE,
-    Action::MORPH,
     Action::REFRESH,
 ]);
 
@@ -112,14 +111,38 @@ describe('fluent factory methods', function () {
         expect($html)->toContain('action="before"');
     });
 
-    it('creates morph stream', function () {
-        $html = Stream::morph('target', 'content')->render();
-        expect($html)->toContain('action="morph"');
-    });
-
     it('creates refresh stream', function () {
         $html = Stream::refresh()->render();
         expect($html)->toContain('action="refresh"');
+    });
+
+    it('creates replace stream with method morph', function () {
+        $html = Stream::replace('target', 'content', method: 'morph')->render();
+        expect($html)
+            ->toContain('action="replace"')
+            ->toContain('method="morph"');
+    });
+
+    it('creates update stream with method morph', function () {
+        $html = Stream::update('target', 'content', method: 'morph')->render();
+        expect($html)
+            ->toContain('action="update"')
+            ->toContain('method="morph"');
+    });
+
+    it('creates refresh stream with method and scroll', function () {
+        $html = Stream::refresh(method: 'morph', scroll: 'preserve')->render();
+        expect($html)
+            ->toContain('action="refresh"')
+            ->toContain('method="morph"')
+            ->toContain('scroll="preserve"');
+    });
+
+    it('creates refresh stream with request-id', function () {
+        $html = Stream::refresh(requestId: 'abc-123')->render();
+        expect($html)
+            ->toContain('action="refresh"')
+            ->toContain('request-id="abc-123"');
     });
 });
 

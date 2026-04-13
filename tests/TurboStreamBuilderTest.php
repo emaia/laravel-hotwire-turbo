@@ -48,7 +48,6 @@ it('supports all stream actions', function () {
         ->remove('e')
         ->after('f', 'c')
         ->before('g', 'c')
-        ->morph('h', 'c')
         ->refresh()
         ->render();
 
@@ -60,8 +59,39 @@ it('supports all stream actions', function () {
         ->toContain('action="remove"')
         ->toContain('action="after"')
         ->toContain('action="before"')
-        ->toContain('action="morph"')
         ->toContain('action="refresh"');
+});
+
+it('supports replace with method morph', function () {
+    $html = turbo_stream()
+        ->replace('card', '<p>New</p>', method: 'morph')
+        ->render();
+
+    expect($html)
+        ->toContain('action="replace"')
+        ->toContain('method="morph"');
+});
+
+it('supports update with method morph', function () {
+    $html = turbo_stream()
+        ->update('list', '<li>Item</li>', method: 'morph')
+        ->render();
+
+    expect($html)
+        ->toContain('action="update"')
+        ->toContain('method="morph"');
+});
+
+it('supports refresh with method, scroll and requestId', function () {
+    $html = turbo_stream()
+        ->refresh(method: 'morph', scroll: 'preserve', requestId: 'req-1')
+        ->render();
+
+    expect($html)
+        ->toContain('action="refresh"')
+        ->toContain('method="morph"')
+        ->toContain('scroll="preserve"')
+        ->toContain('request-id="req-1"');
 });
 
 it('implements StreamInterface', function () {

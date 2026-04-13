@@ -11,6 +11,5 @@ enum Action: string
     case REMOVE = 'remove';
     case AFTER = 'after';
     case BEFORE = 'before';
-    case MORPH = 'morph';
     case REFRESH = 'refresh';
 }

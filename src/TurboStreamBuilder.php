@@ -28,16 +28,16 @@ class TurboStreamBuilder implements Responsable, StreamInterface
         return $this;
     }
 
-    public function replace(string $target, mixed $content = ''): static
+    public function replace(string $target, mixed $content = '', ?string $method = null): static
     {
-        $this->streams->add(Stream::replace($target, $content));
+        $this->streams->add(Stream::replace($target, $content, $method));
 
         return $this;
     }
 
-    public function update(string $target, mixed $content = ''): static
+    public function update(string $target, mixed $content = '', ?string $method = null): static
     {
-        $this->streams->add(Stream::update($target, $content));
+        $this->streams->add(Stream::update($target, $content, $method));
 
         return $this;
     }
@@ -63,16 +63,9 @@ class TurboStreamBuilder implements Responsable, StreamInterface
         return $this;
     }
 
-    public function morph(string $target, mixed $content = ''): static
+    public function refresh(?string $method = null, ?string $scroll = null, ?string $requestId = null): static
     {
-        $this->streams->add(Stream::morph($target, $content));
-
-        return $this;
-    }
-
-    public function refresh(): static
-    {
-        $this->streams->add(Stream::refresh());
+        $this->streams->add(Stream::refresh($method, $scroll, $requestId));
 
         return $this;
     }
