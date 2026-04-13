@@ -1,6 +1,7 @@
 <?php
 
 use Emaia\LaravelHotwireTurbo\Enums\Action;
+use Emaia\LaravelHotwireTurbo\Response as TurboResponse;
 use Illuminate\Support\Facades\Blade;
 
 it('returns response with turbo stream content type', function () {
@@ -10,8 +11,10 @@ it('returns response with turbo stream content type', function () {
         'content' => '<p>Hi</p>',
     ]));
 
-    expect($response->headers->get('Content-Type'))->toBe('text/vnd.turbo-stream.html');
-    expect($response->getContent())->toContain('<p>Hi</p>');
+    expect($response)
+        ->toBeInstanceOf(TurboResponse::class)
+        ->and($response->headers->get('Content-Type'))->toBe('text/vnd.turbo-stream.html')
+        ->and($response->getContent())->toContain('<p>Hi</p>');
 });
 
 it('renders a view by name', function () {

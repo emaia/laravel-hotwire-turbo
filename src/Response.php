@@ -6,7 +6,7 @@ use Illuminate\Http\Response as IlluminateResponse;
 
 class Response extends IlluminateResponse
 {
-    public function __construct(StreamInterface $content, $status = 200, array $headers = [])
+    public function __construct(StreamInterface|string $content, $status = 200, array $headers = [])
     {
         parent::__construct('', $status, $headers);
 

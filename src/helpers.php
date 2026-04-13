@@ -1,8 +1,8 @@
 <?php
 
+use Emaia\LaravelHotwireTurbo\Response as TurboResponse;
 use Emaia\LaravelHotwireTurbo\TurboStreamBuilder;
 use Emaia\LaravelHotwireTurbo\Views\RecordIdentifier;
-use Illuminate\Http\Response;
 use Illuminate\View\View;
 
 if (! function_exists('turbo_stream')) {
@@ -27,17 +27,12 @@ if (! function_exists('dom_class')) {
 }
 
 if (! function_exists('turbo_stream_view')) {
-    /**
-     * @param  view-string|View  $view
-     */
-    function turbo_stream_view(string|View $view, array $data = []): Response
+    function turbo_stream_view(string|View $view, array $data = []): TurboResponse
     {
         if (! $view instanceof View) {
             $view = view($view, $data);
         }
 
-        return new Response($view->render(), 200, [
-            'Content-Type' => 'text/vnd.turbo-stream.html',
-        ]);
+        return new TurboResponse($view->render());
     }
 }
