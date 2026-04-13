@@ -13,6 +13,11 @@ The purpose of this package is to facilitate the use of [Turbo](https://turbo.ho
 - [Usage](#usage)
   - [Turbo Stream Actions](#turbo-stream-actions)
   - [Fluent Builder](#fluent-builder-recommended)
+    - [Model-Aware Targets](#model-aware-targets)
+    - [Morphing](#morphing)
+    - [Page Refresh](#page-refresh)
+    - [Targeting Multiple Elements (CSS Selectors)](#targeting-multiple-elements-css-selectors)
+    - [Conditional Chaining](#conditional-chaining)
   - [DOM Identification](#dom-identification)
   - [Creating Individual Streams](#creating-individual-streams)
   - [Targeting Multiple Elements](#targeting-multiple-elements-css-selector)
@@ -28,6 +33,7 @@ The purpose of this package is to facilitate the use of [Turbo](https://turbo.ho
     - [Turbo Frame](#turbo-frame)
   - [Turbo Drive Blade Directives](#turbo-drive-blade-directives)
   - [Full Controller Example](#full-controller-example)
+- [Configuration](#configuration)
 - [Testing](#testing)
 - [Running Tests](#running-tests)
 
@@ -52,7 +58,6 @@ All Turbo 8 stream actions are supported:
 | `remove` | Remove the target element |
 | `after` | Insert content after the target element |
 | `before` | Insert content before the target element |
-| `morph` | Morph the target element to the new content |
 | `refresh` | Trigger a page refresh |
 
 ### Fluent Builder (Recommended)
@@ -72,6 +77,58 @@ Use `withResponse()` when you need custom status code or headers:
 return turbo_stream()
     ->replace('form', view('form', ['errors' => $errors]))
     ->withResponse(422);
+```
+
+#### Model-Aware Targets
+
+Pass Eloquent models directly — the target is resolved automatically via `dom_id()`:
+
+```php
+return turbo_stream()
+    ->append($message, view('messages.item', compact('message')))  // target="message_15"
+    ->remove($notification);                                        // target="notification_8"
+```
+
+#### Morphing
+
+Morph is a `method` attribute. Use it with `replace` or `update`:
+
+```php
+// Morph the entire element (preserves event listeners, form state, etc.)
+turbo_stream()->replace('card', $content, method: 'morph');
+
+// Morph only the children of the target element
+turbo_stream()->update('list', $content, method: 'morph');
+```
+
+#### Page Refresh
+
+```php
+turbo_stream()->refresh();
+turbo_stream()->refresh(method: 'morph', scroll: 'preserve');
+turbo_stream()->refresh(requestId: 'unique-id');  // debouncing
+```
+
+#### Targeting Multiple Elements (CSS Selectors)
+
+Use `*All()` methods to target multiple elements via CSS selectors:
+
+```php
+turbo_stream()
+    ->updateAll('.unread-count', '<span>0</span>')
+    ->removeAll('.flash-message')
+    ->replaceAll('.card', $content, method: 'morph');
+```
+
+Available: `appendAll`, `prependAll`, `replaceAll`, `updateAll`, `removeAll`, `afterAll`, `beforeAll`.
+
+#### Conditional Chaining
+
+```php
+turbo_stream()
+    ->append('messages', $content)
+    ->when($user->isAdmin(), fn ($b) => $b->update('admin_panel', $adminHtml))
+    ->unless($silent, fn ($b) => $b->append('notifications', $notification));
 ```
 
 ### DOM Identification
@@ -125,8 +182,15 @@ Stream::update('counter', '<span>42</span>')
 Stream::remove('modal')
 Stream::after('item-3', view('items.row', ['item' => $item]))
 Stream::before('item-3', view('items.row', ['item' => $item]))
-Stream::morph('profile', view('users.profile', ['user' => $user]))
-Stream::refresh()
+Stream::replace('profile', view('users.profile', ['user' => $user]), method: 'morph')
+Stream::refresh(method: 'morph', scroll: 'preserve')
+```
+
+All factory methods also accept models as targets:
+
+```php
+Stream::append($message, view('chat.message', compact('message')))
+Stream::remove($notification)
 ```
 
 Or use the constructor with the `Action` enum:
@@ -144,9 +208,15 @@ $stream = new Stream(
 
 ### Targeting Multiple Elements (CSS Selector)
 
-Use `targets` to target multiple DOM elements via CSS selector:
+Use `*All` static methods or the `targets` constructor parameter:
 
 ```php
+// Static methods
+Stream::updateAll('.notification-badge', '<span>5</span>')
+Stream::removeAll('.flash-message')
+Stream::replaceAll('.card', $content, method: 'morph')
+
+// Or via constructor
 $stream = new Stream(
     action: Action::UPDATE,
     targets: '.notification-badge',
@@ -317,7 +387,7 @@ class UpdateProfileRequest extends TurboFormRequest
 
 ##### Morphing
 
-Use `method="morph"` on `replace` or `update` to apply Turbo's [morphing](https://turbo.hotwired.dev/handbook/page_refreshes) instead of a full DOM replacement:
+Use `method="morph"` on `replace` or `update` to apply [morphing](https://turbo.hotwired.dev/handbook/page_refreshes) instead of a full DOM replacement:
 
 ```blade
 {{-- Morph the entire element --}}
@@ -462,7 +532,7 @@ class MessageController extends Controller
         $message->delete();
 
         if (request()->wantsTurboStream()) {
-            return turbo_stream()->remove(dom_id($message));
+            return turbo_stream()->remove($message);
         }
 
         return redirect()->route('messages.index');
@@ -477,6 +547,23 @@ class MessageController extends Controller
         return view('messages.edit', compact('message'));
     }
 }
+```
+
+## Configuration
+
+```php
+// config/turbo.php
+return [
+    // Namespaces stripped when generating DOM IDs from models.
+    // Customize if your models live outside App\Models\.
+    'model_namespaces' => ['App\\Models\\', 'App\\'],
+];
+```
+
+For example, if your models are in `Domain\Billing\Models\`:
+
+```php
+'model_namespaces' => ['Domain\\Billing\\Models\\', 'App\\Models\\', 'App\\'],
 ```
 
 ## Testing
