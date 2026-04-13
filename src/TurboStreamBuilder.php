@@ -4,9 +4,12 @@ namespace Emaia\LaravelHotwireTurbo;
 
 use Emaia\LaravelHotwireTurbo\Response as TurboResponse;
 use Illuminate\Contracts\Support\Responsable;
+use Illuminate\Support\Traits\Conditionable;
 
 class TurboStreamBuilder implements Responsable, StreamInterface
 {
+    use Conditionable;
+
     protected StreamCollection $streams;
 
     public function __construct()

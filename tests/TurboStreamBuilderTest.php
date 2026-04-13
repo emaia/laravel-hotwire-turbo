@@ -94,6 +94,32 @@ it('supports refresh with method, scroll and requestId', function () {
         ->toContain('request-id="req-1"');
 });
 
+it('supports when() conditional chaining', function () {
+    $html = turbo_stream()
+        ->append('messages', '<p>Hello</p>')
+        ->when(true, fn ($b) => $b->update('counter', '<span>5</span>'))
+        ->when(false, fn ($b) => $b->remove('should-not-exist'))
+        ->render();
+
+    expect($html)
+        ->toContain('action="append"')
+        ->toContain('action="update"')
+        ->not->toContain('should-not-exist');
+});
+
+it('supports unless() conditional chaining', function () {
+    $html = turbo_stream()
+        ->append('messages', '<p>Hello</p>')
+        ->unless(false, fn ($b) => $b->update('counter', '<span>5</span>'))
+        ->unless(true, fn ($b) => $b->remove('should-not-exist'))
+        ->render();
+
+    expect($html)
+        ->toContain('action="append"')
+        ->toContain('action="update"')
+        ->not->toContain('should-not-exist');
+});
+
 it('implements StreamInterface', function () {
     $builder = turbo_stream()->append('x', 'y');
 
