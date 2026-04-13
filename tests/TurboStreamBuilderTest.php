@@ -4,7 +4,15 @@ use Emaia\LaravelHotwireTurbo\Response;
 use Emaia\LaravelHotwireTurbo\StreamInterface;
 use Emaia\LaravelHotwireTurbo\TurboStreamBuilder;
 use Illuminate\Contracts\Support\Responsable;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Route;
+
+class BuilderTestMessage extends Model
+{
+    protected $guarded = [];
+
+    protected $table = 'messages';
+}
 
 it('chains multiple stream actions', function () {
     $builder = turbo_stream()
@@ -118,6 +126,32 @@ it('supports unless() conditional chaining', function () {
         ->toContain('action="append"')
         ->toContain('action="update"')
         ->not->toContain('should-not-exist');
+});
+
+it('accepts model as target in builder methods', function () {
+    $model = new BuilderTestMessage;
+    $model->id = 7;
+
+    $html = turbo_stream()
+        ->append($model, '<p>Hello</p>')
+        ->remove($model)
+        ->render();
+
+    expect($html)
+        ->toContain('target="builder_test_message_7"');
+});
+
+it('accepts model in replace with morph', function () {
+    $model = new BuilderTestMessage;
+    $model->id = 3;
+
+    $html = turbo_stream()
+        ->replace($model, '<div>New</div>', method: 'morph')
+        ->render();
+
+    expect($html)
+        ->toContain('target="builder_test_message_3"')
+        ->toContain('method="morph"');
 });
 
 it('implements StreamInterface', function () {

@@ -3,6 +3,7 @@
 namespace Emaia\LaravelHotwireTurbo;
 
 use Emaia\LaravelHotwireTurbo\Enums\Action;
+use Emaia\LaravelHotwireTurbo\Views\RecordIdentifier;
 use Illuminate\View\ComponentAttributeBag;
 use Illuminate\View\View;
 use InvalidArgumentException;
@@ -34,47 +35,56 @@ class Stream implements StreamInterface
         }
     }
 
+    private static function resolveTarget(string|object $target): string
+    {
+        if (is_object($target)) {
+            return (new RecordIdentifier($target))->domId();
+        }
+
+        return $target;
+    }
+
     /**
      * @param  array<string, string>  $attributes
      */
-    public static function action(string $action, string $target, mixed $content = '', array $attributes = []): static
+    public static function action(string $action, string|object $target, mixed $content = '', array $attributes = []): static
     {
-        return new static($action, $target, $content, '', $attributes);
+        return new static($action, self::resolveTarget($target), $content, '', $attributes);
     }
 
-    public static function append(string $target, mixed $content = ''): static
+    public static function append(string|object $target, mixed $content = ''): static
     {
-        return new static(Action::APPEND, $target, $content);
+        return new static(Action::APPEND, self::resolveTarget($target), $content);
     }
 
-    public static function prepend(string $target, mixed $content = ''): static
+    public static function prepend(string|object $target, mixed $content = ''): static
     {
-        return new static(Action::PREPEND, $target, $content);
+        return new static(Action::PREPEND, self::resolveTarget($target), $content);
     }
 
-    public static function replace(string $target, mixed $content = '', ?string $method = null): static
+    public static function replace(string|object $target, mixed $content = '', ?string $method = null): static
     {
-        return new static(Action::REPLACE, $target, $content, attributes: array_filter(['method' => $method]));
+        return new static(Action::REPLACE, self::resolveTarget($target), $content, attributes: array_filter(['method' => $method]));
     }
 
-    public static function update(string $target, mixed $content = '', ?string $method = null): static
+    public static function update(string|object $target, mixed $content = '', ?string $method = null): static
     {
-        return new static(Action::UPDATE, $target, $content, attributes: array_filter(['method' => $method]));
+        return new static(Action::UPDATE, self::resolveTarget($target), $content, attributes: array_filter(['method' => $method]));
     }
 
-    public static function remove(string $target): static
+    public static function remove(string|object $target): static
     {
-        return new static(Action::REMOVE, $target);
+        return new static(Action::REMOVE, self::resolveTarget($target));
     }
 
-    public static function after(string $target, mixed $content = ''): static
+    public static function after(string|object $target, mixed $content = ''): static
     {
-        return new static(Action::AFTER, $target, $content);
+        return new static(Action::AFTER, self::resolveTarget($target), $content);
     }
 
-    public static function before(string $target, mixed $content = ''): static
+    public static function before(string|object $target, mixed $content = ''): static
     {
-        return new static(Action::BEFORE, $target, $content);
+        return new static(Action::BEFORE, self::resolveTarget($target), $content);
     }
 
     public static function refresh(?string $method = null, ?string $scroll = null, ?string $requestId = null): static

@@ -17,49 +17,49 @@ class TurboStreamBuilder implements Responsable, StreamInterface
         $this->streams = StreamCollection::make();
     }
 
-    public function append(string $target, mixed $content = ''): static
+    public function append(string|object $target, mixed $content = ''): static
     {
         $this->streams->add(Stream::append($target, $content));
 
         return $this;
     }
 
-    public function prepend(string $target, mixed $content = ''): static
+    public function prepend(string|object $target, mixed $content = ''): static
     {
         $this->streams->add(Stream::prepend($target, $content));
 
         return $this;
     }
 
-    public function replace(string $target, mixed $content = '', ?string $method = null): static
+    public function replace(string|object $target, mixed $content = '', ?string $method = null): static
     {
         $this->streams->add(Stream::replace($target, $content, $method));
 
         return $this;
     }
 
-    public function update(string $target, mixed $content = '', ?string $method = null): static
+    public function update(string|object $target, mixed $content = '', ?string $method = null): static
     {
         $this->streams->add(Stream::update($target, $content, $method));
 
         return $this;
     }
 
-    public function remove(string $target): static
+    public function remove(string|object $target): static
     {
         $this->streams->add(Stream::remove($target));
 
         return $this;
     }
 
-    public function after(string $target, mixed $content = ''): static
+    public function after(string|object $target, mixed $content = ''): static
     {
         $this->streams->add(Stream::after($target, $content));
 
         return $this;
     }
 
-    public function before(string $target, mixed $content = ''): static
+    public function before(string|object $target, mixed $content = ''): static
     {
         $this->streams->add(Stream::before($target, $content));
 
@@ -76,7 +76,7 @@ class TurboStreamBuilder implements Responsable, StreamInterface
     /**
      * @param  array<string, string>  $attributes
      */
-    public function action(string $action, string $target, mixed $content = '', array $attributes = []): static
+    public function action(string $action, string|object $target, mixed $content = '', array $attributes = []): static
     {
         $this->streams->add(Stream::action($action, $target, $content, $attributes));
 

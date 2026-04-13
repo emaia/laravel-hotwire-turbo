@@ -2,7 +2,15 @@
 
 use Emaia\LaravelHotwireTurbo\Enums\Action;
 use Emaia\LaravelHotwireTurbo\Stream;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Blade;
+
+class StreamTestMessage extends Model
+{
+    protected $guarded = [];
+
+    protected $table = 'messages';
+}
 
 it('renders a turbo stream with target', function () {
     $stream = new Stream(Action::UPDATE, 'my-target', '<p>Hello</p>');
@@ -143,6 +151,37 @@ describe('fluent factory methods', function () {
         expect($html)
             ->toContain('action="refresh"')
             ->toContain('request-id="abc-123"');
+    });
+});
+
+describe('model-aware targets', function () {
+    it('resolves model to dom_id in append', function () {
+        $model = new StreamTestMessage;
+        $model->id = 42;
+
+        $html = Stream::append($model, '<p>Hi</p>')->render();
+
+        expect($html)
+            ->toContain('target="stream_test_message_42"')
+            ->toContain('<p>Hi</p>');
+    });
+
+    it('resolves new model to create prefix', function () {
+        $model = new StreamTestMessage;
+
+        $html = Stream::replace($model, '<form></form>')->render();
+
+        expect($html)->toContain('target="create_stream_test_message"');
+    });
+
+    it('throws for objects without getKey', function () {
+        Stream::append(new stdClass, 'content');
+    })->throws(InvalidArgumentException::class);
+
+    it('still accepts string targets', function () {
+        $html = Stream::append('my-target', 'content')->render();
+
+        expect($html)->toContain('target="my-target"');
     });
 });
 

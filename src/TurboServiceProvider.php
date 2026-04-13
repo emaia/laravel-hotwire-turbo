@@ -3,6 +3,7 @@
 namespace Emaia\LaravelHotwireTurbo;
 
 use Closure;
+use Emaia\LaravelHotwireTurbo\Models\Name;
 use Emaia\LaravelHotwireTurbo\Response as TurboResponse;
 use Emaia\LaravelHotwireTurbo\Testing\AssertableTurboStream;
 use Emaia\LaravelHotwireTurbo\Testing\ConvertTestResponseToTurboStreamCollection;
@@ -28,11 +29,17 @@ class TurboServiceProvider extends PackageServiceProvider
          */
         $package
             ->name('laravel-turbo')
-            ->hasViews();
+            ->hasViews()
+            ->hasConfigFile('turbo');
     }
 
     public function packageBooted(): void
     {
+        $modelNamespaces = config('turbo.model_namespaces');
+
+        if (is_array($modelNamespaces)) {
+            Name::setModelNamespaces($modelNamespaces);
+        }
 
         $this->loadViewsFrom(__DIR__.'/../resources/views', 'turbo');
 
