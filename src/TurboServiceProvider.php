@@ -90,6 +90,26 @@ class TurboServiceProvider extends PackageServiceProvider
             return "<?php echo '<meta name=\"turbo-refresh-scroll\" content=\"'.e({$scroll}).'\">' ?>";
         });
 
+        Blade::directive('turboCdn', function () {
+            return '<script type="module" src="https://cdn.jsdelivr.net/npm/@hotwired/turbo@latest/dist/turbo.es2017-esm.min.js"></script>';
+        });
+
+        Blade::directive('turboVisitControl', function (string $control) {
+            return "<?php echo '<meta name=\"turbo-visit-control\" content=\"'.e({$control}).'\">' ?>";
+        });
+
+        Blade::directive('turboRoot', function (string $root) {
+            return "<?php echo '<meta name=\"turbo-root\" content=\"'.e({$root}).'\">' ?>";
+        });
+
+        Blade::directive('viewTransition', function (string $value) {
+            return "<?php echo '<meta name=\"view-transition\" content=\"'.e({$value}).'\">' ?>";
+        });
+
+        Blade::directive('turboPrefetch', function (string $value) {
+            return "<?php echo '<meta name=\"turbo-prefetch\" content=\"'.e({$value}).'\">' ?>";
+        });
+
         Blade::directive('domid', function (string $expression) {
             return "<?php echo e(dom_id({$expression})); ?>";
         });

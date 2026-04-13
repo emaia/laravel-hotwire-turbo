@@ -24,9 +24,9 @@ The purpose of this package is to facilitate the use of [Turbo](https://turbo.ho
   - [Stream Collections](#stream-collections)
   - [Turbo Stream Responses](#turbo-stream-responses)
   - [Turbo Stream Views](#turbo-stream-views)
+  - [Detecting Turbo Requests](#detecting-turbo-requests)
   - [Conditional Turbo Responses](#conditional-turbo-responses)
   - [Custom Stream Actions](#custom-stream-actions)
-  - [Detecting Turbo Requests](#detecting-turbo-requests)
   - [Form Validation with Turbo Frames](#form-validation-with-turbo-frames)
   - [Blade Components](#blade-components)
     - [Turbo Stream](#turbo-stream)
@@ -287,6 +287,20 @@ return response()->turboStreamView('messages.streams.created', compact('message'
 <x-turbo::stream action="remove" target="new-message-form" />
 ```
 
+### Detecting Turbo Requests
+
+```php
+// Check if the request came from any Turbo Frame
+if (request()->wasFromTurboFrame()) {
+    // ...
+}
+
+// Check if it came from a specific Turbo Frame
+if (request()->wasFromTurboFrame('modal')) {
+    // ...
+}
+```
+
 ### Conditional Turbo Responses
 
 Use explicit request checks in your controllers to return Turbo Streams only when appropriate:
@@ -302,7 +316,7 @@ return redirect()->route('messages.index');
 To scope behavior to a specific Turbo Frame:
 
 ```php
-if (request()->wantsTurboStream() && request()->wasFromTurboFrame('modal')) {
+if (request()->wasFromTurboFrame('modal')) {
     return turbo_stream()->update('modal-content', view('messages.edit', compact('message')));
 }
 
@@ -325,29 +339,6 @@ Stream::action('console-log', 'debug', '<p>Debug info</p>', [
 return turbo_stream()
     ->action('notification', 'alerts', '<p>Saved!</p>', ['data-timeout' => '3000'])
     ->remove('modal');
-```
-
-### Detecting Turbo Requests
-
-```php
-if (request()->wantsTurboStream()) {
-    return turbo_stream()
-        ->replace('todo-1', view('todos.item', ['todo' => $todo]));
-}
-
-return redirect()->back();
-```
-
-```php
-// Check if the request came from any Turbo Frame
-if (request()->wasFromTurboFrame()) {
-    // ...
-}
-
-// Check if it came from a specific Turbo Frame
-if (request()->wasFromTurboFrame('modal')) {
-    // ...
-}
 ```
 
 ### Form Validation with Turbo Frames
@@ -491,6 +482,24 @@ Extra attributes are forwarded to the `<turbo-frame>` element (e.g. `class`, `da
 
 ### Turbo Drive Blade Directives
 
+#### Loading Turbo via CDN
+
+Add Turbo to your layout without a build step:
+
+```blade
+<head>
+    @turboCdn
+</head>
+```
+
+This outputs:
+
+```html
+<script type="module" src="https://cdn.jsdelivr.net/npm/@hotwired/turbo@latest/dist/turbo.es2017-esm.min.js"></script>
+```
+
+#### Meta Tag Directives
+
 Control Turbo Drive behavior in your layout's `<head>`:
 
 ```blade
@@ -499,15 +508,24 @@ Control Turbo Drive behavior in your layout's `<head>`:
     @turboNoPreview
     @turboRefreshMethod('morph')
     @turboRefreshScroll('preserve')
+    @turboVisitControl('reload')
+    @turboRoot('/app')
+    @viewTransition('same-origin')
+    @turboPrefetch('false')
 </head>
 ```
 
 | Directive | Output |
 |-----------|--------|
+| `@turboCdn` | `<script type="module" src="...turbo.es2017-esm.min.js"></script>` |
 | `@turboNocache` | `<meta name="turbo-cache-control" content="no-cache">` |
 | `@turboNoPreview` | `<meta name="turbo-cache-control" content="no-preview">` |
 | `@turboRefreshMethod('morph')` | `<meta name="turbo-refresh-method" content="morph">` |
 | `@turboRefreshScroll('preserve')` | `<meta name="turbo-refresh-scroll" content="preserve">` |
+| `@turboVisitControl('reload')` | `<meta name="turbo-visit-control" content="reload">` |
+| `@turboRoot('/app')` | `<meta name="turbo-root" content="/app">` |
+| `@viewTransition('same-origin')` | `<meta name="view-transition" content="same-origin">` |
+| `@turboPrefetch('false')` | `<meta name="turbo-prefetch" content="false">` |
 
 ### Turbo Drive Redirect 303
 

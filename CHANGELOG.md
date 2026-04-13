@@ -2,6 +2,12 @@
 
 All notable changes to `laravel-hotwire-turbo` will be documented in this file.
 
+## 0.8.6 - 2026-04-13
+
+### Added
+
+- **Blade directives** — `@turboCdn` loads Turbo via CDN. New meta tag directives for full spec conformance: `@turboVisitControl`, `@turboRoot`, `@viewTransition`, `@turboPrefetch`.
+
 ## 0.8.5 - 2026-04-13
 
 ### Added
