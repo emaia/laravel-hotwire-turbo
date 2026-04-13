@@ -144,7 +144,7 @@ use Illuminate\Support\Facades\Blade;
 // AppServiceProvider::boot()
 
 TurboStreamBuilder::macro('closeModal', function () {
-    return $this->update('modal', '<span data-controller="dialog--closemodal"></span>');
+    return $this->update('modal');
 });
 
 TurboStreamBuilder::macro('flash', function (string $type, string $message) {
@@ -159,8 +159,8 @@ Then use them fluently in your controllers:
 
 ```php
 return turbo_stream()
-    ->replace(dom_id($data), view('dashboard.indicators.data._tr', compact('indicator', 'data')))
-    ->flash('success', 'Dados atualizados com sucesso!')
+    ->replace($message, view('messages._tr', compact('message')))
+    ->flash('success', 'Updated successfully')
     ->closeModal();
 ```
 
