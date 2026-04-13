@@ -238,6 +238,55 @@ it('implements Responsable', function () {
     expect($builder)->toBeInstanceOf(Responsable::class);
 });
 
+it('supports custom macros', function () {
+    TurboStreamBuilder::macro('closeModal', function () {
+        return $this->append('modal', '<span data-controller="dialog--closemodal"></span>');
+    });
+
+    $html = turbo_stream()
+        ->append('messages', '<p>Hello</p>')
+        ->closeModal()
+        ->render();
+
+    expect($html)
+        ->toContain('action="append"')
+        ->toContain('target="messages"')
+        ->toContain('target="modal"')
+        ->toContain('data-controller="dialog--closemodal"');
+});
+
+it('supports macros with parameters', function () {
+    TurboStreamBuilder::macro('notification', function (string $type, string $text) {
+        return $this->append('notifications', "<div class=\"alert-{$type}\">{$text}</div>");
+    });
+
+    $html = turbo_stream()
+        ->notification('success', 'Saved!')
+        ->render();
+
+    expect($html)
+        ->toContain('target="notifications"')
+        ->toContain('alert-success')
+        ->toContain('Saved!');
+});
+
+it('chains macros with built-in methods', function () {
+    TurboStreamBuilder::macro('done', function () {
+        return $this->remove('spinner');
+    });
+
+    $html = turbo_stream()
+        ->replace('form', '<form>Updated</form>')
+        ->done()
+        ->render();
+
+    expect($html)
+        ->toContain('action="replace"')
+        ->toContain('target="form"')
+        ->toContain('action="remove"')
+        ->toContain('target="spinner"');
+});
+
 it('can be returned directly as a response', function () {
     Route::get('/turbo-stream-direct', function () {
         return turbo_stream()->append('messages', '<p>Hello</p>');

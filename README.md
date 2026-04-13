@@ -18,6 +18,7 @@ The purpose of this package is to facilitate the use of [Turbo](https://turbo.ho
     - [Page Refresh](#page-refresh)
     - [Targeting Multiple Elements (CSS Selectors)](#targeting-multiple-elements-css-selectors)
     - [Conditional Chaining](#conditional-chaining)
+    - [Custom Macros](#custom-macros)
   - [DOM Identification](#dom-identification)
   - [Creating Individual Streams](#creating-individual-streams)
   - [Targeting Multiple Elements](#targeting-multiple-elements-css-selector)
@@ -130,6 +131,37 @@ turbo_stream()
     ->append('messages', $content)
     ->when($user->isAdmin(), fn ($b) => $b->update('admin_panel', $adminHtml))
     ->unless($silent, fn ($b) => $b->append('notifications', $notification));
+```
+
+#### Custom Macros
+
+The builder uses Laravel's `Macroable` trait, so you can register your own methods to encapsulate repetitive stream patterns. Register macros in your `AppServiceProvider`:
+
+```php
+use Emaia\LaravelHotwireTurbo\TurboStreamBuilder;
+use Illuminate\Support\Facades\Blade;
+
+// AppServiceProvider::boot()
+
+TurboStreamBuilder::macro('closeModal', function () {
+    return $this->update('modal', '<span data-controller="dialog--closemodal"></span>');
+});
+
+TurboStreamBuilder::macro('flash', function (string $type, string $message) {
+    return $this->append('flash-container', Blade::render(
+        '<x-hwc::flash-message :type="$type" :message="$message" />',
+        compact('type', 'message')
+    ));
+});
+```
+
+Then use them fluently in your controllers:
+
+```php
+return turbo_stream()
+    ->replace(dom_id($data), view('dashboard.indicators.data._tr', compact('indicator', 'data')))
+    ->flash('success', 'Dados atualizados com sucesso!')
+    ->closeModal();
 ```
 
 ### DOM Identification

@@ -5,10 +5,11 @@ namespace Emaia\LaravelHotwireTurbo;
 use Emaia\LaravelHotwireTurbo\Response as TurboResponse;
 use Illuminate\Contracts\Support\Responsable;
 use Illuminate\Support\Traits\Conditionable;
+use Illuminate\Support\Traits\Macroable;
 
 class TurboStreamBuilder implements Responsable, StreamInterface
 {
-    use Conditionable;
+    use Conditionable, Macroable;
 
     protected StreamCollection $streams;
 
