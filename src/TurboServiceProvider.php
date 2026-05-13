@@ -48,7 +48,7 @@ class TurboServiceProvider extends PackageServiceProvider
         }
 
         $this->callAfterResolving('blade.compiler', function (BladeCompiler $blade) {
-            $blade->anonymousComponentPath(__DIR__.'/../resources/views/components', 'turbo');
+            $blade->anonymousComponentNamespace('turbo::components', 'turbo');
         });
 
         Request::macro('wantsTurboStream', function (): bool {
