@@ -6,8 +6,6 @@ All notable changes to `laravel-hotwire-turbo` will be documented in this file.
 
 **Full Changelog**: https://github.com/emaia/laravel-hotwire-turbo/compare/0.8.9...0.8.10
 
-## Unreleased
-
 ### Added
 
 - **`<x-turbo::stream-source>` component** — anonymous Blade component for `<turbo-stream-source>`, used to connect a page to an SSE or WebSocket endpoint that pushes Turbo Stream updates.
