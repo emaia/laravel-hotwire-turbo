@@ -7,7 +7,7 @@ All notable changes to `laravel-hotwire-turbo` will be documented in this file.
 ### Removed
 
 - **`Turbo` facade and `Emaia\LaravelHotwireTurbo\Turbo` class** — the facade alias was pointing to a non-existent class (`Facades\LaravelHotwireTurbo`) and the underlying `Turbo::response()` method only wrapped `new TurboResponse(...)`. Use `response()->turboStream($content)` or `turbo_stream()` instead.
-- **Laravel 10 and 11 support** — minimum Laravel version is now 12. `illuminate/*` requires `^12.0|^13.0` and `orchestra/testbench` requires `^10.0|^11.0`.
+- **Laravel 10 support** — minimum Laravel version is now 11. `illuminate/*` requires `^11.0|^12.0|^13.0`.
 
 ## 0.8.7 - 2026-04-30
 
