@@ -15,6 +15,16 @@ class ArticleComment extends Model
     protected $guarded = [];
 }
 
+class MessageDto
+{
+    public function __construct(public ?int $id = null) {}
+}
+
+readonly class BookDto
+{
+    public function __construct(public int $id) {}
+}
+
 it('generates dom_id for existing model', function () {
     $model = new Message;
     $model->id = 15;
@@ -61,11 +71,29 @@ it('handles multi-word model names', function () {
     expect(dom_class($model))->toBe('article_comment');
 });
 
-it('throws exception for objects without getKey', function () {
+it('throws exception for objects without getKey or public id', function () {
     $obj = new stdClass;
 
     new RecordIdentifier($obj);
-})->throws(InvalidArgumentException::class, 'does not have a getKey() method');
+})->throws(InvalidArgumentException::class, 'must have a getKey() method or a public $id property');
+
+it('generates dom_id for plain objects with public id property', function () {
+    $dto = new MessageDto(42);
+
+    expect(dom_id($dto))->toBe('message_dto_42');
+});
+
+it('generates dom_id for readonly DTOs', function () {
+    $dto = new BookDto(7);
+
+    expect(dom_id($dto))->toBe('book_dto_7');
+});
+
+it('treats unset public id as a new record', function () {
+    $dto = new MessageDto;
+
+    expect(dom_id($dto, 'new'))->toBe('new_message_dto');
+});
 
 it('resolves name singular and plural', function () {
     $model = new Message;

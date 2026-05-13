@@ -167,7 +167,7 @@ return turbo_stream()
 
 ### DOM Identification
 
-Generate consistent DOM IDs and CSS classes from your Eloquent models:
+Generate consistent DOM IDs and CSS classes from your Eloquent models — or any object exposing a `getKey()` method or a public `$id` property (DTOs, readonly classes, etc.):
 
 ```php
 $message = Message::find(15);

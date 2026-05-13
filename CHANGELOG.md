@@ -7,6 +7,7 @@ All notable changes to `laravel-hotwire-turbo` will be documented in this file.
 ### Added
 
 - **`<x-turbo::stream-source>` component** — anonymous Blade component for `<turbo-stream-source>`, used to connect a page to an SSE or WebSocket endpoint that pushes Turbo Stream updates.
+- **`dom_id()` / `dom_class()` accept non-Eloquent objects** — any object with a public `$id` property (DTOs, readonly classes, value objects) now works in addition to objects with `getKey()`. `getKey()` still takes precedence when both are present.
 
 ### Changed
 
