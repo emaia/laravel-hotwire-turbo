@@ -47,8 +47,6 @@ class TurboServiceProvider extends PackageServiceProvider
             Name::setModelNamespaces($modelNamespaces);
         }
 
-        $this->loadViewsFrom(__DIR__.'/../resources/views', 'turbo');
-
         $this->callAfterResolving('blade.compiler', function (BladeCompiler $blade) {
             $blade->anonymousComponentPath(__DIR__.'/../resources/views/components', 'turbo');
         });

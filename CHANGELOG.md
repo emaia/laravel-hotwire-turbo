@@ -4,6 +4,14 @@ All notable changes to `laravel-hotwire-turbo` will be documented in this file.
 
 ## Unreleased
 
+### Added
+
+- **`<x-turbo::stream-source>` component** — anonymous Blade component for `<turbo-stream-source>`, used to connect a page to an SSE or WebSocket endpoint that pushes Turbo Stream updates.
+
+### Fixed
+
+- **Duplicate component entries in IDE autocomplete (e.g. Laravel Idea)** — views were being registered twice with the same namespace (once via Spatie's `->hasViews()` and again manually in `packageBooted()`). The redundant `loadViewsFrom()` call was removed.
+
 ### Removed
 
 - **`Turbo` facade and `Emaia\LaravelHotwireTurbo\Turbo` class** — the facade alias was pointing to a non-existent class (`Facades\LaravelHotwireTurbo`) and the underlying `Turbo::response()` method only wrapped `new TurboResponse(...)`. Use `response()->turboStream($content)` or `turbo_stream()` instead.

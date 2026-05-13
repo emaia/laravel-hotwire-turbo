@@ -32,6 +32,7 @@ The purpose of this package is to facilitate the use of [Turbo](https://turbo.ho
   - [Blade Components](#blade-components)
     - [Turbo Stream](#turbo-stream)
     - [Turbo Frame](#turbo-frame)
+    - [Turbo Stream Source](#turbo-stream-source)
   - [Turbo Drive Blade Directives](#turbo-drive-blade-directives)
   - [Turbo Drive Redirect 303](#turbo-drive-redirect-303)
   - [Full Controller Example](#full-controller-example)
@@ -511,6 +512,24 @@ Extra attributes are forwarded to the `<turbo-stream>` element (e.g. `data-contr
 | `recurse` | Frame id to recurse into when extracting content |
 
 Extra attributes are forwarded to the `<turbo-frame>` element (e.g. `class`, `data-controller`).
+
+#### Turbo Stream Source
+
+Connect to a Server-Sent Events or WebSocket endpoint that pushes `<turbo-stream>` messages:
+
+```blade
+{{-- SSE --}}
+<x-turbo::stream-source src="/messages/stream" />
+
+{{-- WebSocket --}}
+<x-turbo::stream-source src="wss://example.com/cable" />
+```
+
+| Prop | Description |
+|------|-------------|
+| `src` | Endpoint URL (required) |
+
+Extra attributes are forwarded to the `<turbo-stream-source>` element.
 
 ### Turbo Drive Blade Directives
 
