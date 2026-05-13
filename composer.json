@@ -24,9 +24,10 @@
         "spatie/laravel-package-tools": "^1.16"
     },
     "require-dev": {
-        "laravel/pint": "^1.14",
-        "nunomaduro/collision": "^8.1.1",
         "larastan/larastan": "^2.9|^3.1",
+        "laravel/pao": "^1.0",
+        "laravel/pint": "^1.29.1",
+        "nunomaduro/collision": "^8.9.4",
         "orchestra/testbench": "^9.0|^10.0|^11.0",
         "orchestra/workbench": "^9.0|^10.0|^11.0",
         "pestphp/pest": "^3.0|^4.0",
@@ -69,10 +70,7 @@
         "laravel": {
             "providers": [
                 "Emaia\\LaravelHotwireTurbo\\TurboServiceProvider"
-            ],
-            "aliases": {
-                "Turbo": "Emaia\\LaravelHotwireTurbo\\Facades\\LaravelHotwireTurbo"
-            }
+            ]
         }
     },
     "minimum-stability": "dev",

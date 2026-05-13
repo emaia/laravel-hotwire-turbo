@@ -2,6 +2,12 @@
 
 All notable changes to `laravel-hotwire-turbo` will be documented in this file.
 
+## Unreleased
+
+### Removed
+
+- **`Turbo` facade and `Emaia\LaravelHotwireTurbo\Turbo` class** — the facade alias was pointing to a non-existent class (`Facades\LaravelHotwireTurbo`) and the underlying `Turbo::response()` method only wrapped `new TurboResponse(...)`. Use `response()->turboStream($content)` or `turbo_stream()` instead.
+
 ## 0.8.7 - 2026-04-30
 
 **Full Changelog**: https://github.com/emaia/laravel-hotwire-turbo/compare/v0.8.6...0.8.7
