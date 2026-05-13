@@ -148,7 +148,7 @@ class Stream implements StreamInterface
             array_flip(['method', 'scroll', 'request-id']),
         );
 
-        return view('turbo::components.stream', [
+        return view()->file(__DIR__.'/../resources/views/components/stream.blade.php', [
             'action' => $this->action,
             'target' => $this->target ?: null,
             'targets' => $this->targets ?: null,

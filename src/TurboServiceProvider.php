@@ -31,7 +31,6 @@ class TurboServiceProvider extends PackageServiceProvider
          */
         $package
             ->name('laravel-turbo')
-            ->hasViews()
             ->hasConfigFile('turbo');
     }
 
@@ -48,7 +47,7 @@ class TurboServiceProvider extends PackageServiceProvider
         }
 
         $this->callAfterResolving('blade.compiler', function (BladeCompiler $blade) {
-            $blade->anonymousComponentNamespace('turbo::components', 'turbo');
+            $blade->anonymousComponentPath(__DIR__.'/../resources/views/components', 'turbo');
         });
 
         Request::macro('wantsTurboStream', function (): bool {
