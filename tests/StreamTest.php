@@ -68,6 +68,24 @@ it('allows refresh action with no target without throwing', function () {
     expect($stream->render())->toContain('action="refresh"');
 });
 
+it('normalizes case-insensitive standard action strings to lowercase', function () {
+    $stream = new Stream('APPEND', 'target', 'content');
+
+    expect($stream->render())->toContain('action="append"');
+});
+
+it('allows refresh via case-insensitive string without throwing', function () {
+    $stream = new Stream('Refresh');
+
+    expect($stream->render())->toContain('action="refresh"');
+});
+
+it('preserves custom action strings as-is', function () {
+    $stream = new Stream('console-log', 'target', 'content');
+
+    expect($stream->render())->toContain('action="console-log"');
+});
+
 it('supports all turbo 8 actions', function (Action $action) {
     $stream = new Stream($action, 'target', 'content');
 

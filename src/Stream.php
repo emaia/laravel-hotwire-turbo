@@ -23,10 +23,11 @@ class Stream implements StreamInterface
         protected string $targets = '',
         protected array $attributes = [],
     ) {
-        $isRefresh = $action === Action::REFRESH
-            || (is_string($action) && strtolower($action) === Action::REFRESH->value);
+        $this->action = is_string($action)
+            ? (Action::tryFrom(strtolower($action)) ?? $action)
+            : $action;
 
-        if (! $isRefresh && empty($target) && empty($targets)) {
+        if ($this->action !== Action::REFRESH && empty($target) && empty($targets)) {
             throw new InvalidArgumentException('Either target or targets must be provided');
         }
 

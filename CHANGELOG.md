@@ -8,6 +8,10 @@ All notable changes to `laravel-hotwire-turbo` will be documented in this file.
 
 - **`<x-turbo::stream-source>` component** — anonymous Blade component for `<turbo-stream-source>`, used to connect a page to an SSE or WebSocket endpoint that pushes Turbo Stream updates.
 
+### Changed
+
+- **Standard action strings are now normalized to lowercase** — passing `new Stream('APPEND', ...)` or `new Stream('Refresh')` now emits `action="append"` / `action="refresh"` instead of preserving the original casing. Custom action strings (e.g. `'console-log'`) are unchanged. The internal refresh check no longer needs case-insensitive comparison.
+
 ### Fixed
 
 - **Duplicate component entries in IDE autocomplete (e.g. Laravel Idea)** — views were being registered twice with the same namespace (once via Spatie's `->hasViews()` and again manually in `packageBooted()`). The redundant `loadViewsFrom()` call was removed.
