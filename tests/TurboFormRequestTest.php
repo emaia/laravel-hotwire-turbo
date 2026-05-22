@@ -71,3 +71,39 @@ it('does not alter redirect for non-turbo-frame requests', function () {
 
     $response->assertRedirect('/');
 });
+
+it('trusts the current request host when it differs from APP_URL host', function () {
+    config()->set('app.url', 'http://localhost:8000');
+
+    $response = $this->fromTurboFrame('profile-form')
+        ->post('http://127.0.0.1:8000/profile', [
+            'name' => '',
+            '_turbo_frame_src' => 'http://127.0.0.1:8000/profile',
+        ]);
+
+    $response->assertRedirect('http://127.0.0.1:8000/profile');
+});
+
+it('trusts hosts listed in turbo.trusted_redirect_hosts config', function () {
+    config()->set('turbo.trusted_redirect_hosts', ['staging.example.com']);
+
+    $response = $this->fromTurboFrame('profile-form')
+        ->post('/profile', [
+            'name' => '',
+            '_turbo_frame_src' => 'https://staging.example.com/profile',
+        ]);
+
+    $response->assertRedirect('https://staging.example.com/profile');
+});
+
+it('accepts full URLs as entries in turbo.trusted_redirect_hosts config', function () {
+    config()->set('turbo.trusted_redirect_hosts', ['https://staging.example.com']);
+
+    $response = $this->fromTurboFrame('profile-form')
+        ->post('/profile', [
+            'name' => '',
+            '_turbo_frame_src' => 'https://staging.example.com/profile',
+        ]);
+
+    $response->assertRedirect('https://staging.example.com/profile');
+});

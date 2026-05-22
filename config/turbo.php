@@ -31,4 +31,22 @@ return [
 
     'auto_redirect_303' => true,
 
+    /*
+    |--------------------------------------------------------------------------
+    | Trusted Redirect Hosts
+    |--------------------------------------------------------------------------
+    |
+    | When a TurboFormRequest fails validation inside a Turbo Frame, the
+    | request is redirected back to the frame's source URL. Hosts listed
+    | here, plus the current request host and the host from APP_URL, are
+    | always trusted. Anything else falls back to "/" to prevent open
+    | redirects. Accepts bare hosts ("staging.example.com") or full URLs
+    | ("https://staging.example.com"). Useful for reverse proxies, custom
+    | staging domains, or dev setups where `php artisan serve` exposes
+    | 127.0.0.1 while APP_URL points at localhost.
+    |
+    */
+
+    'trusted_redirect_hosts' => [],
+
 ];

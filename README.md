@@ -677,6 +677,12 @@ class MessageController extends Controller
 
 ## Configuration
 
+Publish the config file to customize the defaults:
+
+```bash
+php artisan vendor:publish --tag="turbo-config"
+```
+
 ```php
 // config/turbo.php
 return [
@@ -687,6 +693,11 @@ return [
     // Automatically convert redirects to 303 for Turbo visits.
     // Set to false to register the TurboMiddleware manually.
     'auto_redirect_303' => true,
+
+    // Extra hosts trusted for TurboFormRequest redirects. The current
+    // request host and APP_URL host are always trusted; anything else
+    // falls back to "/". Use for staging domains or reverse proxies.
+    'trusted_redirect_hosts' => [],
 ];
 ```
 
