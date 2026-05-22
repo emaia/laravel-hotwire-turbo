@@ -2,6 +2,10 @@
 
 All notable changes to `laravel-hotwire-turbo` will be documented in this file.
 
+## 0.9.1 - 2026-05-22
+
+**Full Changelog**: https://github.com/emaia/laravel-hotwire-turbo/compare/0.9.0...0.9.1
+
 ## 0.9.0 - 2026-05-22
 
 ### What's Changed
@@ -80,6 +84,7 @@ turbo_stream()->morph('card', $content);
 // After (v0.8)
 turbo_stream()->replace('card', $content, method: 'morph');  // morph entire element
 turbo_stream()->update('card', $content, method: 'morph');   // morph children only
+
 
 
 
