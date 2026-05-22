@@ -376,7 +376,9 @@ return turbo_stream()
 
 ### Form Validation with Turbo Frames
 
-Extend `TurboFormRequest` to handle validation errors correctly within Turbo Frames. When validation fails, it redirects to the previous URL so the frame re-renders with errors:
+Extend `TurboFormRequest` to handle validation errors correctly within Turbo Frames.
+When validation fails, the request redirects back to the page that rendered the frame
+so the frame re-renders with error messages.
 
 ```php
 use Emaia\LaravelHotwireTurbo\Http\Requests\TurboFormRequest;
@@ -392,6 +394,38 @@ class UpdateProfileRequest extends TurboFormRequest
     }
 }
 ```
+
+#### Explicit Frame Source URL
+
+Add the `@turboFrameSrc` directive inside your Turbo Frame forms for deterministic
+redirects that don't rely on session state or browser headers:
+
+```blade
+<turbo-frame id="profile-form" src="{{ route('profile.edit') }}">
+    <form method="POST" action="{{ route('profile.update') }}">
+        @turboFrameSrc
+
+        <input name="name" required />
+        <button>Save</button>
+    </form>
+</turbo-frame>
+```
+
+This renders a hidden input with the current page URL, ensuring the redirect
+target is always correct — even with lazy-loaded frames or multiple browser tabs.
+
+#### Redirect Source Priority
+
+When validation fails inside a Turbo Frame, the redirect URL is resolved in this order:
+
+| Priority | Source | Notes |
+|---|---|---|
+| 1 | `_turbo_frame_src` input | Set by `@turboFrameSrc` — deterministic, server-side |
+| 2 | `X-Turbo-Frame-Src` header | Optional, can be set by client-side JS if desired |
+| 3 | `Referer` header | Browser native |
+| 4 | `url()->previous()` | Laravel session fallback |
+
+External URLs are rejected (redirects fall back to `/`) to prevent open redirect attacks.
 
 ### Blade Components
 
