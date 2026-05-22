@@ -79,6 +79,10 @@ class TurboServiceProvider extends PackageServiceProvider
             return '<meta name="turbo-cache-control" content="no-preview">';
         });
 
+        Blade::directive('turboFrameSrc', function () {
+            return "<?php echo '<input type=\"hidden\" name=\"_turbo_frame_src\" value=\"'.e(url()->full()).'\">'; ?>";
+        });
+
         Blade::directive('turboRefreshMethod', function (string $method) {
             return "<?php echo '<meta name=\"turbo-refresh-method\" content=\"'.e({$method}).'\">' ?>";
         });
