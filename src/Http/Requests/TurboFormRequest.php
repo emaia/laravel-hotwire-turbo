@@ -22,8 +22,21 @@ class TurboFormRequest extends FormRequest
         return $this->sanitizeRedirectUrl(
             $this->input('_turbo_frame_src')
                 ?: $this->header('X-Turbo-Frame-Src')
-                ?: $this->header('Referer')
-                ?: url()->previous()
+                ?: $this->getFrameSourceFallback()
+        );
+    }
+
+    private function getFrameSourceFallback(): string
+    {
+        $url = session('_previous.url');
+
+        if ($url) {
+            return $url;
+        }
+
+        throw new \RuntimeException(
+            'TurboFormRequest: unable to determine frame source URL. '.
+            'Add @turboFrameSrc directive to your form inside the Turbo Frame.'
         );
     }
 

@@ -30,20 +30,24 @@ it('redirects to _turbo_frame_src input when present in turbo frame request', fu
     $response->assertRedirect('/profile');
 });
 
-it('falls back to Referer header when _turbo_frame_src is absent', function () {
-    $response = $this->fromTurboFrame('profile-form')
-        ->post('/profile', ['name' => ''], ['Referer' => url('/dashboard')]);
-
-    $response->assertRedirect('/dashboard');
-});
-
-it('falls back to url()->previous() when no input or referer', function () {
-    session()->setPreviousUrl(url('/fallback'));
+it('falls back to session previous url when _turbo_frame_src is absent', function () {
+    session()->setPreviousUrl(url('/dashboard'));
 
     $response = $this->fromTurboFrame('profile-form')
         ->post('/profile', ['name' => '']);
 
-    $response->assertRedirect('/fallback');
+    $response->assertRedirect('/dashboard');
+});
+
+it('throws RuntimeException when no input, header, or session previous url', function () {
+    $this->withoutExceptionHandling();
+
+    session()->setPreviousUrl('');
+
+    $this->expectException(RuntimeException::class);
+
+    $this->fromTurboFrame('profile-form')
+        ->post('/profile', ['name' => '']);
 });
 
 it('accepts relative URL in _turbo_frame_src', function () {
