@@ -422,10 +422,14 @@ When validation fails inside a Turbo Frame, the redirect URL is resolved in this
 |---|---|---|
 | 1 | `_turbo_frame_src` input | Set by `@turboFrameSrc` — deterministic, server-side |
 | 2 | `X-Turbo-Frame-Src` header | Optional, can be set by client-side JS if desired |
-| 3 | `Referer` header | Browser native |
-| 4 | `url()->previous()` | Laravel session fallback |
+| 3 | `session('_previous.url')` | Laravel session fallback for simple cases |
+| 4 | `RuntimeException` | Explicit error when all sources fail |
 
-External URLs are rejected (redirects fall back to `/`) to prevent open redirect attacks.
+External URLs from levels 1 and 2 are validated against trusted hosts. Untrusted
+URLs are rejected (redirects fall back to `/`) to prevent open redirect attacks.
+
+If no source URL can be resolved, a `RuntimeException` is thrown with a clear message
+asking the developer to add the `@turboFrameSrc` directive to the form.
 
 ### Blade Components
 
