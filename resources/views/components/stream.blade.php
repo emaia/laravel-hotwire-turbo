@@ -27,9 +27,5 @@ $mergeAttrs = array_filter([
 @endphp
 
 <turbo-stream action="{{ $actionValue }}" {{ $attributes->merge($mergeAttrs) }}>
-    @if (! $noTemplate)
-    <template>
-        {!! $slotContent !!}
-    </template>
-    @endif
+    @if (! $noTemplate) <template>{!! $slotContent !!}</template> @endif
 </turbo-stream>
