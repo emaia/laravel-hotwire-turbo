@@ -19,6 +19,7 @@ The purpose of this package is to facilitate the use of [Turbo](https://turbo.ho
     - [Targeting Multiple Elements (CSS Selectors)](#targeting-multiple-elements-css-selectors)
     - [Conditional Chaining](#conditional-chaining)
     - [Custom Macros](#custom-macros)
+    - [Echoing Streams in Blade](#echoing-streams-in-blade)
   - [DOM Identification](#dom-identification)
   - [Creating Individual Streams](#creating-individual-streams)
   - [Targeting Multiple Elements](#targeting-multiple-elements-css-selector)
@@ -136,9 +137,10 @@ turbo_stream()
 
 #### Custom Macros
 
-The builder uses Laravel's `Macroable` trait, so you can register your own methods to encapsulate repetitive stream patterns. Register macros in your `AppServiceProvider`:
+Both `TurboStreamBuilder` and `Stream` use Laravel's `Macroable` trait, so you can register your own methods to encapsulate repetitive stream patterns. Register macros in your `AppServiceProvider`:
 
 ```php
+use Emaia\LaravelHotwireTurbo\Stream;
 use Emaia\LaravelHotwireTurbo\TurboStreamBuilder;
 use Illuminate\Support\Facades\Blade;
 
@@ -154,6 +156,11 @@ TurboStreamBuilder::macro('flash', function (string $type, string $message) {
         compact('type', 'message')
     ));
 });
+
+// Macros also work on the Stream factory for one-off streams.
+Stream::macro('confetti', function (string $target) {
+    return Stream::action('confetti', $target, '', ['data-duration' => '2000']);
+});
 ```
 
 Then use them fluently in your controllers:
@@ -163,7 +170,21 @@ return turbo_stream()
     ->replace($message, view('messages._tr', compact('message')))
     ->flash('success', 'Updated successfully')
     ->closeModal();
+
+return response()->turboStream(Stream::confetti('party'));
 ```
+
+#### Echoing Streams in Blade
+
+`Stream`, `StreamCollection` and `TurboStreamBuilder` all implement `Htmlable`, so you can render them directly in Blade without escaping:
+
+```blade
+{{ turbo_stream()->append('messages', view('messages.item', compact('message'))) }}
+
+{{ Stream::remove($notification) }}
+```
+
+This is useful when composing Turbo Stream views by hand or returning streams from view composers.
 
 ### DOM Identification
 

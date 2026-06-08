@@ -2,6 +2,8 @@
 
 use Emaia\LaravelHotwireTurbo\Enums\Action;
 use Emaia\LaravelHotwireTurbo\Stream;
+use Emaia\LaravelHotwireTurbo\StreamInterface;
+use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Blade;
 
@@ -245,6 +247,70 @@ describe('model-aware targets', function () {
         $html = Stream::append('my-target', 'content')->render();
 
         expect($html)->toContain('target="my-target"');
+    });
+});
+
+describe('renderable contracts', function () {
+    it('implements Htmlable, StreamInterface and Stringable', function () {
+        $stream = Stream::append('messages', '<p>Hi</p>');
+
+        expect($stream)
+            ->toBeInstanceOf(Htmlable::class)
+            ->toBeInstanceOf(StreamInterface::class)
+            ->toBeInstanceOf(Stringable::class);
+    });
+
+    it('returns the rendered html string from toHtml()', function () {
+        $stream = Stream::append('messages', '<p>Hi</p>');
+
+        expect($stream->toHtml())
+            ->toBeString()
+            ->toContain('action="append"')
+            ->toContain('target="messages"');
+    });
+
+    it('renders to string when echoed', function () {
+        $stream = Stream::append('messages', '<p>Hi</p>');
+
+        expect((string) $stream)->toContain('action="append"');
+    });
+
+    it('can be echoed in Blade without escaping the turbo-stream tag', function () {
+        $stream = Stream::append('messages', '<p>Hi</p>');
+
+        $html = Blade::render('{{ $stream }}', ['stream' => $stream]);
+
+        expect($html)
+            ->toContain('<turbo-stream')
+            ->toContain('action="append"')
+            ->not->toContain('&lt;turbo-stream');
+    });
+});
+
+describe('Stream::macro', function () {
+    it('registers and invokes a custom factory macro', function () {
+        Stream::macro('confetti', function (string $target) {
+            return Stream::action('confetti', $target, '', ['data-duration' => '2000']);
+        });
+
+        $stream = Stream::confetti('party');
+
+        expect($stream)->toBeInstanceOf(Stream::class);
+        expect($stream->render())
+            ->toContain('action="confetti"')
+            ->toContain('target="party"')
+            ->toContain('data-duration="2000"');
+    });
+
+    it('supports macros invoked on instances', function () {
+        Stream::macro('withDebugAttribute', function () {
+            /** @var Stream $this */
+            return $this;
+        });
+
+        $stream = Stream::append('messages', '<p>Hi</p>')->withDebugAttribute();
+
+        expect($stream)->toBeInstanceOf(Stream::class);
     });
 });
 

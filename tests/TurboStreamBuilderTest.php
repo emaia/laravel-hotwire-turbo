@@ -3,8 +3,10 @@
 use Emaia\LaravelHotwireTurbo\Response;
 use Emaia\LaravelHotwireTurbo\StreamInterface;
 use Emaia\LaravelHotwireTurbo\TurboStreamBuilder;
+use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Contracts\Support\Responsable;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Route;
 
 class BuilderTestMessage extends Model
@@ -296,4 +298,43 @@ it('can be returned directly as a response', function () {
 
     expect($response->headers->get('Content-Type'))->toContain('text/vnd.turbo-stream.html')
         ->and($response->getContent())->toContain('action="append"');
+});
+
+describe('renderable contracts', function () {
+    it('implements Htmlable, Responsable, StreamInterface and Stringable', function () {
+        $builder = turbo_stream()->append('messages', '<p>Hi</p>');
+
+        expect($builder)
+            ->toBeInstanceOf(Htmlable::class)
+            ->toBeInstanceOf(Responsable::class)
+            ->toBeInstanceOf(StreamInterface::class)
+            ->toBeInstanceOf(Stringable::class);
+    });
+
+    it('returns the rendered html string from toHtml()', function () {
+        $builder = turbo_stream()->append('messages', '<p>Hi</p>');
+
+        expect($builder->toHtml())
+            ->toBeString()
+            ->toContain('action="append"');
+    });
+
+    it('renders to string when echoed', function () {
+        $builder = turbo_stream()->append('messages', '<p>Hi</p>')->remove('modal');
+
+        expect((string) $builder)
+            ->toContain('action="append"')
+            ->toContain('action="remove"');
+    });
+
+    it('can be echoed in Blade without escaping the turbo-stream tags', function () {
+        $builder = turbo_stream()->append('messages', '<p>Hi</p>');
+
+        $html = Blade::render('{{ $stream }}', ['stream' => $builder]);
+
+        expect($html)
+            ->toContain('<turbo-stream')
+            ->toContain('action="append"')
+            ->not->toContain('&lt;turbo-stream');
+    });
 });
