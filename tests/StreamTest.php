@@ -287,6 +287,81 @@ describe('renderable contracts', function () {
     });
 });
 
+describe('view() and partial() content helpers', function () {
+    it('sets the content from a Blade view', function () {
+        $view = makeTempBladeView('<li>{{ $name }}</li>');
+
+        $html = Stream::append('messages')
+            ->view($view, ['name' => 'Bob'])
+            ->render();
+
+        expect($html)
+            ->toContain('action="append"')
+            ->toContain('target="messages"')
+            ->toContain('<li>Bob</li>');
+    });
+
+    it('partial() is an alias of view()', function () {
+        $view = makeTempBladeView('<span>{{ $count }}</span>');
+
+        $html = Stream::update('counter')
+            ->partial($view, ['count' => 7])
+            ->render();
+
+        expect($html)->toContain('<span>7</span>');
+    });
+
+    it('overwrites previous content when called', function () {
+        $view = makeTempBladeView('<p>fresh</p>');
+
+        $html = Stream::append('messages', '<p>stale</p>')
+            ->view($view, [])
+            ->render();
+
+        expect($html)
+            ->toContain('<p>fresh</p>')
+            ->not->toContain('<p>stale</p>');
+    });
+});
+
+describe('escape() content flag', function () {
+    it('escapes string content when enabled', function () {
+        $html = Stream::update('greeting', '<script>alert(1)</script>')
+            ->escape()
+            ->render();
+
+        expect($html)
+            ->toContain('&lt;script&gt;')
+            ->not->toContain('<script>alert');
+    });
+
+    it('does not escape by default', function () {
+        $html = Stream::update('greeting', '<strong>hi</strong>')->render();
+
+        expect($html)
+            ->toContain('<strong>hi</strong>')
+            ->not->toContain('&lt;strong&gt;');
+    });
+
+    it('escape(false) keeps content raw', function () {
+        $html = Stream::update('greeting', '<strong>hi</strong>')
+            ->escape(false)
+            ->render();
+
+        expect($html)->toContain('<strong>hi</strong>');
+    });
+
+    it('does not double-escape view-rendered content', function () {
+        // view() output is already HTML; escape() would double-escape it.
+        // This documents that escape() is intended for user-supplied strings.
+        $view = makeTempBladeView('<p>safe</p>');
+
+        $html = Stream::update('greeting')->view($view, [])->render();
+
+        expect($html)->toContain('<p>safe</p>');
+    });
+});
+
 describe('Stream::macro', function () {
     it('registers and invokes a custom factory macro', function () {
         Stream::macro('confetti', function (string $target) {

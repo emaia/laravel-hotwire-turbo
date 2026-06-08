@@ -135,6 +135,58 @@ class TurboStreamBuilder implements Htmlable, Responsable, StreamInterface, Stri
         return $this;
     }
 
+    /**
+     * Set the content of the most recently added stream from a Blade view.
+     *
+     * @param  array<string, mixed>  $data
+     *
+     * @throws \LogicException when called before any stream has been added
+     */
+    public function view(string $view, array $data = []): static
+    {
+        $this->lastStream(__FUNCTION__)->view($view, $data);
+
+        return $this;
+    }
+
+    /**
+     * Alias of view() — matches Rails-style "partial" terminology.
+     *
+     * @param  array<string, mixed>  $data
+     *
+     * @throws \LogicException when called before any stream has been added
+     */
+    public function partial(string $view, array $data = []): static
+    {
+        return $this->view($view, $data);
+    }
+
+    /**
+     * Toggle HTML escaping on the most recently added stream.
+     *
+     * @throws \LogicException when called before any stream has been added
+     */
+    public function escape(bool $escape = true): static
+    {
+        $this->lastStream(__FUNCTION__)->escape($escape);
+
+        return $this;
+    }
+
+    private function lastStream(string $caller): Stream
+    {
+        $stream = $this->streams->last();
+
+        if (! $stream instanceof Stream) {
+            throw new \LogicException(sprintf(
+                'Cannot call %s() on TurboStreamBuilder before adding a stream.',
+                $caller,
+            ));
+        }
+
+        return $stream;
+    }
+
     public function render(): string
     {
         return $this->streams->render();

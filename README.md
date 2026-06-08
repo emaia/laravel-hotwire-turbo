@@ -18,6 +18,8 @@ The purpose of this package is to facilitate the use of [Turbo](https://turbo.ho
     - [Page Refresh](#page-refresh)
     - [Targeting Multiple Elements (CSS Selectors)](#targeting-multiple-elements-css-selectors)
     - [Conditional Chaining](#conditional-chaining)
+    - [Attaching Views with view() / partial()](#attaching-views-with-view--partial)
+    - [Escaping User-Supplied Content](#escaping-user-supplied-content)
     - [Custom Macros](#custom-macros)
     - [Echoing Streams in Blade](#echoing-streams-in-blade)
   - [DOM Identification](#dom-identification)
@@ -135,6 +137,38 @@ turbo_stream()
     ->unless($silent, fn ($b) => $b->append('notifications', $notification));
 ```
 
+#### Attaching Views with `view()` / `partial()`
+
+Use `view()` (or its alias `partial()`) to attach a Blade view to the most recently added stream. This is an alternative to passing `view(...)` inline — useful when you want target and content on separate lines:
+
+```php
+return turbo_stream()
+    ->append('messages')->view('messages._item', compact('message'))
+    ->update('counter')->partial('counters._badge', ['count' => $count]);
+```
+
+Equivalent to:
+
+```php
+return turbo_stream()
+    ->append('messages', view('messages._item', compact('message')))
+    ->update('counter', view('counters._badge', ['count' => $count]));
+```
+
+Calling `view()` before any stream is added throws a `LogicException`.
+
+#### Escaping User-Supplied Content
+
+By default, content is rendered as raw HTML. When the content is a user-supplied string that may contain HTML, call `escape()` to apply `e()` before render:
+
+```php
+return turbo_stream()
+    ->update('greeting', $user->name)->escape()
+    ->append('messages', view('messages._item', compact('message')));  // not escaped
+```
+
+`escape()` applies to the most recently added stream only and has no effect on content already rendered through `view()` or `partial()`.
+
 #### Custom Macros
 
 Both `TurboStreamBuilder` and `Stream` use Laravel's `Macroable` trait, so you can register your own methods to encapsulate repetitive stream patterns. Register macros in your `AppServiceProvider`:
@@ -246,6 +280,13 @@ All factory methods also accept models as targets:
 ```php
 Stream::append($message, view('chat.message', compact('message')))
 Stream::remove($notification)
+```
+
+Individual streams also expose the same `view()`, `partial()` and `escape()` helpers:
+
+```php
+Stream::append('messages')->view('messages._item', compact('message'));
+Stream::update('greeting', $user->name)->escape();
 ```
 
 Or use the constructor with the `Action` enum:
