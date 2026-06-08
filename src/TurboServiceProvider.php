@@ -62,6 +62,10 @@ class TurboServiceProvider extends PackageServiceProvider
             return $this->header('Turbo-Frame', null) === $frame;
         });
 
+        Request::macro('turboRequestId', function (): ?string {
+            return $this->header('X-Turbo-Request-Id');
+        });
+
         Response::macro('turboStream', function (StreamInterface $content, $status = 200, array $headers = []) {
             return new TurboResponse($content, $status, $headers);
         });

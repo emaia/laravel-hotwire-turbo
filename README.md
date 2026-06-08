@@ -37,6 +37,9 @@ The purpose of this package is to facilitate the use of [Turbo](https://turbo.ho
     - [Turbo Frame](#turbo-frame)
     - [Turbo Stream Source](#turbo-stream-source)
   - [Turbo Drive Blade Directives](#turbo-drive-blade-directives)
+    - [Loading Turbo via CDN](#loading-turbo-via-cdn)
+    - [Meta Tag Directives](#meta-tag-directives)
+    - [Refreshes With](#refreshes-with)
   - [Turbo Drive Redirect 303](#turbo-drive-redirect-303)
   - [Exceptions](#exceptions)
   - [Full Controller Example](#full-controller-example)
@@ -395,6 +398,12 @@ if (request()->wasFromTurboFrame()) {
 if (request()->wasFromTurboFrame('modal')) {
     // ...
 }
+
+// Read the X-Turbo-Request-Id header (set by Turbo Drive on every visit).
+// Useful as a debounce key for refresh streams.
+$requestId = request()->turboRequestId();    // string|null
+
+return turbo_stream()->refresh(requestId: $requestId);
 ```
 
 ### Conditional Turbo Responses
@@ -594,13 +603,18 @@ Extra attributes are forwarded to the `<turbo-stream>` element (e.g. `data-contr
 
 {{-- Recursive frame --}}
 <x-turbo::frame id="recursive" src="/frame" recurse="composer" />
+
+{{-- Model-based id (resolves to dom_id($message)) --}}
+<x-turbo::frame :id="$message">
+    @include('messages._item', ['message' => $message])
+</x-turbo::frame>
 ```
 
 ##### Props reference
 
 | Prop | Description |
 |------|-------------|
-| `id` | Frame identifier (required) |
+| `id` | Frame identifier (required). Accepts a string or any object resolved via `dom_id()` (Eloquent model, DTO with `getKey()`/`$id`) |
 | `src` | URL to load content from (eager by default) |
 | `loading` | `eager` (default) or `lazy` |
 | `target` | Default navigation target — use `_top` to navigate the whole page |
@@ -678,6 +692,30 @@ Control Turbo Drive behavior in your layout's `<head>`:
 | `@turboRoot('/app')` | `<meta name="turbo-root" content="/app">` |
 | `@viewTransition('same-origin')` | `<meta name="view-transition" content="same-origin">` |
 | `@turboPrefetch('false')` | `<meta name="turbo-prefetch" content="false">` |
+
+#### Refreshes With
+
+`<x-turbo::refreshes-with>` packs the two most common page-refresh meta tags into a single component. Both props are optional — only the ones you pass are emitted:
+
+```blade
+<head>
+    <x-turbo::refreshes-with method="morph" scroll="preserve" />
+</head>
+```
+
+Outputs:
+
+```html
+<meta name="turbo-refresh-method" content="morph">
+<meta name="turbo-refresh-scroll" content="preserve">
+```
+
+| Prop | Description |
+|------|-------------|
+| `method` | `morph` — use morphing on page refreshes |
+| `scroll` | `preserve` or `reset` — scroll behavior |
+
+The individual directives (`@turboRefreshMethod`, `@turboRefreshScroll`) remain available if you prefer them.
 
 ### Turbo Drive Redirect 303
 

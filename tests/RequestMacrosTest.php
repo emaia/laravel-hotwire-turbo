@@ -38,3 +38,17 @@ it('returns false when no turbo frame header', function () {
 
     expect(request()->wasFromTurboFrame())->toBeFalse(); // @phpstan-ignore method.notFound
 });
+
+it('reads the turbo request id from the X-Turbo-Request-Id header', function () {
+    $this->call('GET', '/', [], [], [], [
+        'HTTP_X_TURBO_REQUEST_ID' => 'abc-123',
+    ]);
+
+    expect(request()->turboRequestId())->toBe('abc-123'); // @phpstan-ignore method.notFound
+});
+
+it('returns null when X-Turbo-Request-Id header is absent', function () {
+    $this->call('GET', '/');
+
+    expect(request()->turboRequestId())->toBeNull(); // @phpstan-ignore method.notFound
+});
