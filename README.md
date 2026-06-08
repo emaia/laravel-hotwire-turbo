@@ -5,10 +5,23 @@
 [![GitHub Code Style Action Status](https://img.shields.io/github/actions/workflow/status/emaia/laravel-hotwire-turbo/fix-php-code-style-issues.yml?branch=main&label=code%20style&style=flat-square)](https://github.com/emaia/laravel-hotwire-turbo/actions?query=workflow%3A"Fix+PHP+code+style+issues"+branch%3Amain)
 [![Total Downloads](https://img.shields.io/packagist/dt/emaia/laravel-hotwire-turbo.svg?style=flat-square)](https://packagist.org/packages/emaia/laravel-hotwire-turbo)
 
-The purpose of this package is to facilitate the use of [Turbo](https://turbo.hotwired.dev/) ([Hotwire](https://hotwired.dev/)) in a Laravel app.
+**The thin server-side foundation for [Turbo](https://turbo.hotwired.dev/) ([Hotwire](https://hotwired.dev/)) in Laravel.** A focused set of server-side primitives — Stream builder, frame helpers, DOM id resolution, request detection, validation handling, and test utilities — without imposing UI components, broadcasting, or JavaScript scaffolding.
+
+## When to use this package
+
+The Hotwire ecosystem for Laravel has three packages with overlapping but distinct goals. Pick the one that matches your project:
+
+| Use this package if…                                              | Use [`hotwired-laravel/turbo-laravel`](https://github.com/hotwired-laravel/turbo-laravel) if… | Use [`emaia/laravel-hotwire`](https://github.com/emaia/laravel-hotwire) if… |
+|-------------------------------------------------------------------|-----------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------|
+| You want a thin server-side layer over Turbo with full control    | You want Rails-like conventions and automatic model broadcasting                              | You want UI components, Stimulus controllers, and generators on top         |
+| You bring your own UI components and JavaScript scaffolding       | You target Hotwire Native (iOS/Android)                                                       | You want a batteries-included Hotwire stack                                 |
+| You'll integrate broadcasting via Laravel Echo manually if needed | You want auto-broadcast via Eloquent observers                                                | (depends on this package as foundation)                                     |
+
+This package keeps a narrow scope on purpose: broadcasting, Hotwire Native, JavaScript scaffolding, and UI components are out of scope here — they're covered by the sibling packages above.
 
 ## Table of Contents
 
+- [When to use this package](#when-to-use-this-package)
 - [Installation](#installation)
 - [Usage](#usage)
   - [Turbo Stream Actions](#turbo-stream-actions)
@@ -59,16 +72,16 @@ composer require emaia/laravel-hotwire-turbo
 
 All Turbo 8 stream actions are supported:
 
-| Action | Description |
-|--------|-------------|
-| `append` | Add content after the target's existing content |
+| Action    | Description                                      |
+|-----------|--------------------------------------------------|
+| `append`  | Add content after the target's existing content  |
 | `prepend` | Add content before the target's existing content |
-| `replace` | Replace the entire target element |
-| `update` | Update the target element's content |
-| `remove` | Remove the target element |
-| `after` | Insert content after the target element |
-| `before` | Insert content before the target element |
-| `refresh` | Trigger a page refresh |
+| `replace` | Replace the entire target element                |
+| `update`  | Update the target element's content              |
+| `remove`  | Remove the target element                        |
+| `after`   | Insert content after the target element          |
+| `before`  | Insert content before the target element         |
+| `refresh` | Trigger a page refresh                           |
 
 ### Fluent Builder (Recommended)
 
@@ -490,12 +503,12 @@ target is always correct — even with lazy-loaded frames or multiple browser ta
 
 When validation fails inside a Turbo Frame, the redirect URL is resolved in this order:
 
-| Priority | Source | Notes |
-|---|---|---|
-| 1 | `_turbo_frame_src` input | Set by `@turboFrameSrc` — deterministic, server-side |
-| 2 | `X-Turbo-Frame-Src` header | Optional, can be set by client-side JS if desired |
-| 3 | `session('_previous.url')` | Laravel session fallback for simple cases |
-| 4 | `RuntimeException` | Explicit error when all sources fail |
+| Priority | Source                     | Notes                                                |
+|----------|----------------------------|------------------------------------------------------|
+| 1        | `_turbo_frame_src` input   | Set by `@turboFrameSrc` — deterministic, server-side |
+| 2        | `X-Turbo-Frame-Src` header | Optional, can be set by client-side JS if desired    |
+| 3        | `session('_previous.url')` | Laravel session fallback for simple cases            |
+| 4        | `RuntimeException`         | Explicit error when all sources fail                 |
 
 External URLs from levels 1 and 2 are validated against trusted hosts. Untrusted
 URLs are rejected (redirects fall back to `/`) to prevent open redirect attacks.
@@ -551,14 +564,14 @@ Use `method="morph"` on `replace` or `update` to apply [morphing](https://turbo.
 
 ##### Props reference
 
-| Prop | Description |
-|------|-------------|
-| `action` | Stream action — accepts string or `Action` enum |
-| `target` | Target DOM id |
-| `targets` | CSS selector to target multiple elements |
-| `method` | `morph` — use morphing instead of full replacement (replace/update) |
-| `scroll` | `preserve` or `reset` — scroll behavior for refresh |
-| `request-id` | Debounce key for refresh actions |
+| Prop         | Description                                                         |
+|--------------|---------------------------------------------------------------------|
+| `action`     | Stream action — accepts string or `Action` enum                     |
+| `target`     | Target DOM id                                                       |
+| `targets`    | CSS selector to target multiple elements                            |
+| `method`     | `morph` — use morphing instead of full replacement (replace/update) |
+| `scroll`     | `preserve` or `reset` — scroll behavior for refresh                 |
+| `request-id` | Debounce key for refresh actions                                    |
 
 Extra attributes are forwarded to the `<turbo-stream>` element (e.g. `data-controller`).
 
@@ -612,19 +625,19 @@ Extra attributes are forwarded to the `<turbo-stream>` element (e.g. `data-contr
 
 ##### Props reference
 
-| Prop | Description |
-|------|-------------|
-| `id` | Frame identifier (required). Accepts a string or any object resolved via `dom_id()` (Eloquent model, DTO with `getKey()`/`$id`) |
-| `src` | URL to load content from (eager by default) |
-| `loading` | `eager` (default) or `lazy` |
-| `target` | Default navigation target — use `_top` to navigate the whole page |
-| `disabled` | Prevents all navigation |
-| `refresh` | `morph` — use morphing when the frame reloads on page refresh |
-| `autoscroll` | Scroll the frame into view after loading |
-| `autoscroll-block` | Vertical alignment: `end` (default), `start`, `center`, `nearest` |
-| `autoscroll-behavior` | Scroll animation: `auto` (default) or `smooth` |
-| `advance` | `advance` or `replace` — promote navigations to browser history |
-| `recurse` | Frame id to recurse into when extracting content |
+| Prop                  | Description                                                                                                                     |
+|-----------------------|---------------------------------------------------------------------------------------------------------------------------------|
+| `id`                  | Frame identifier (required). Accepts a string or any object resolved via `dom_id()` (Eloquent model, DTO with `getKey()`/`$id`) |
+| `src`                 | URL to load content from (eager by default)                                                                                     |
+| `loading`             | `eager` (default) or `lazy`                                                                                                     |
+| `target`              | Default navigation target — use `_top` to navigate the whole page                                                               |
+| `disabled`            | Prevents all navigation                                                                                                         |
+| `refresh`             | `morph` — use morphing when the frame reloads on page refresh                                                                   |
+| `autoscroll`          | Scroll the frame into view after loading                                                                                        |
+| `autoscroll-block`    | Vertical alignment: `end` (default), `start`, `center`, `nearest`                                                               |
+| `autoscroll-behavior` | Scroll animation: `auto` (default) or `smooth`                                                                                  |
+| `advance`             | `advance` or `replace` — promote navigations to browser history                                                                 |
+| `recurse`             | Frame id to recurse into when extracting content                                                                                |
 
 Extra attributes are forwarded to the `<turbo-frame>` element (e.g. `class`, `data-controller`).
 
@@ -640,8 +653,8 @@ Connect to a Server-Sent Events or WebSocket endpoint that pushes `<turbo-stream
 <x-turbo::stream-source src="wss://example.com/cable" />
 ```
 
-| Prop | Description |
-|------|-------------|
+| Prop  | Description             |
+|-------|-------------------------|
 | `src` | Endpoint URL (required) |
 
 Extra attributes are forwarded to the `<turbo-stream-source>` element.
@@ -681,17 +694,17 @@ Control Turbo Drive behavior in your layout's `<head>`:
 </head>
 ```
 
-| Directive | Output |
-|-----------|--------|
-| `@turboCdn` | `<script type="module" src="...turbo.es2017-esm.min.js"></script>` |
-| `@turboNocache` | `<meta name="turbo-cache-control" content="no-cache">` |
-| `@turboNoPreview` | `<meta name="turbo-cache-control" content="no-preview">` |
-| `@turboRefreshMethod('morph')` | `<meta name="turbo-refresh-method" content="morph">` |
-| `@turboRefreshScroll('preserve')` | `<meta name="turbo-refresh-scroll" content="preserve">` |
-| `@turboVisitControl('reload')` | `<meta name="turbo-visit-control" content="reload">` |
-| `@turboRoot('/app')` | `<meta name="turbo-root" content="/app">` |
-| `@viewTransition('same-origin')` | `<meta name="view-transition" content="same-origin">` |
-| `@turboPrefetch('false')` | `<meta name="turbo-prefetch" content="false">` |
+| Directive                         | Output                                                             |
+|-----------------------------------|--------------------------------------------------------------------|
+| `@turboCdn`                       | `<script type="module" src="...turbo.es2017-esm.min.js"></script>` |
+| `@turboNocache`                   | `<meta name="turbo-cache-control" content="no-cache">`             |
+| `@turboNoPreview`                 | `<meta name="turbo-cache-control" content="no-preview">`           |
+| `@turboRefreshMethod('morph')`    | `<meta name="turbo-refresh-method" content="morph">`               |
+| `@turboRefreshScroll('preserve')` | `<meta name="turbo-refresh-scroll" content="preserve">`            |
+| `@turboVisitControl('reload')`    | `<meta name="turbo-visit-control" content="reload">`               |
+| `@turboRoot('/app')`              | `<meta name="turbo-root" content="/app">`                          |
+| `@viewTransition('same-origin')`  | `<meta name="view-transition" content="same-origin">`              |
+| `@turboPrefetch('false')`         | `<meta name="turbo-prefetch" content="false">`                     |
 
 #### Refreshes With
 
@@ -710,10 +723,10 @@ Outputs:
 <meta name="turbo-refresh-scroll" content="preserve">
 ```
 
-| Prop | Description |
-|------|-------------|
+| Prop     | Description                              |
+|----------|------------------------------------------|
 | `method` | `morph` — use morphing on page refreshes |
-| `scroll` | `preserve` or `reset` — scroll behavior |
+| `scroll` | `preserve` or `reset` — scroll behavior  |
 
 The individual directives (`@turboRefreshMethod`, `@turboRefreshScroll`) remain available if you prefer them.
 
