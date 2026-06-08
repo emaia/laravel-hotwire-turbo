@@ -3,12 +3,12 @@
 namespace Emaia\LaravelHotwireTurbo;
 
 use Emaia\LaravelHotwireTurbo\Enums\Action;
+use Emaia\LaravelHotwireTurbo\Exceptions\TurboStreamResponseFailedException;
 use Emaia\LaravelHotwireTurbo\Views\RecordIdentifier;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Support\Traits\Macroable;
 use Illuminate\View\ComponentAttributeBag;
 use Illuminate\View\View;
-use InvalidArgumentException;
 use Stringable;
 use Throwable;
 
@@ -37,7 +37,7 @@ class Stream implements Htmlable, StreamInterface, Stringable
             : $action;
 
         if ($this->action !== Action::REFRESH && empty($target) && empty($targets)) {
-            throw new InvalidArgumentException('Either target or targets must be provided');
+            throw TurboStreamResponseFailedException::missingTarget();
         }
 
         if ($content instanceof View) {

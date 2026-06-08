@@ -2,6 +2,7 @@
 
 namespace Emaia\LaravelHotwireTurbo;
 
+use Emaia\LaravelHotwireTurbo\Exceptions\TurboStreamResponseFailedException;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Support\Collection;
 use Stringable;
@@ -14,7 +15,7 @@ class StreamCollection extends Collection implements Htmlable, StreamInterface, 
 
         $this->each(function ($item) {
             if (! $item instanceof Stream) {
-                throw new \InvalidArgumentException('Collection items must be instances of Stream');
+                throw TurboStreamResponseFailedException::nonStreamItem();
             }
         });
     }
@@ -29,7 +30,7 @@ class StreamCollection extends Collection implements Htmlable, StreamInterface, 
     public function add($item): static
     {
         if (! $item instanceof Stream) {
-            throw new \InvalidArgumentException('Collection items must be instances of Stream');
+            throw TurboStreamResponseFailedException::nonStreamItem();
         }
 
         $this->push($item);
