@@ -16,6 +16,10 @@ class Stream implements Htmlable, StreamInterface, Stringable
 {
     use Macroable;
 
+    protected bool $escapeContent = false;
+
+    protected bool $contentFromView = false;
+
     /**
      * @param  array<string, string>  $attributes
      *
@@ -38,7 +42,46 @@ class Stream implements Htmlable, StreamInterface, Stringable
 
         if ($content instanceof View) {
             $this->content = $content->render();
+            $this->contentFromView = true;
         }
+    }
+
+    /**
+     * Set the stream content from a Blade view.
+     *
+     * @param  array<string, mixed>  $data
+     *
+     * @throws Throwable
+     */
+    public function view(string $view, array $data = []): static
+    {
+        $this->content = view($view, $data)->render();
+        $this->contentFromView = true;
+
+        return $this;
+    }
+
+    /**
+     * Alias of view() — matches Rails-style "partial" terminology.
+     *
+     * @param  array<string, mixed>  $data
+     *
+     * @throws Throwable
+     */
+    public function partial(string $view, array $data = []): static
+    {
+        return $this->view($view, $data);
+    }
+
+    /**
+     * Toggle HTML escaping of string content at render time.
+     * Has no effect when content is a rendered View (already HTML).
+     */
+    public function escape(bool $escape = true): static
+    {
+        $this->escapeContent = $escape;
+
+        return $this;
     }
 
     private static function resolveTarget(string|object $target): string
@@ -200,11 +243,15 @@ class Stream implements Htmlable, StreamInterface, Stringable
             array_flip(['method', 'scroll', 'request-id']),
         );
 
+        $content = $this->escapeContent && is_string($this->content) && ! $this->contentFromView
+            ? e($this->content)
+            : $this->content;
+
         return view()->file(__DIR__.'/../resources/views/components/stream.blade.php', [
             'action' => $this->action,
             'target' => $this->target ?: null,
             'targets' => $this->targets ?: null,
-            'content' => $this->content,
+            'content' => $content,
             'attributes' => new ComponentAttributeBag(
                 array_map(fn ($v) => e((string) $v), $extraAttributes)
             ),

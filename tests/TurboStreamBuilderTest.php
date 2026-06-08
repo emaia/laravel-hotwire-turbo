@@ -300,6 +300,99 @@ it('can be returned directly as a response', function () {
         ->and($response->getContent())->toContain('action="append"');
 });
 
+describe('view() and partial() builder helpers', function () {
+    it('attaches a view to the last stream', function () {
+        $view = makeTempBladeView('<li>{{ $name }}</li>');
+
+        $html = turbo_stream()
+            ->append('messages')
+            ->view($view, ['name' => 'Alice'])
+            ->render();
+
+        expect($html)
+            ->toContain('action="append"')
+            ->toContain('target="messages"')
+            ->toContain('<li>Alice</li>');
+    });
+
+    it('partial() is an alias of view() on the builder', function () {
+        $view = makeTempBladeView('<span>{{ $count }}</span>');
+
+        $html = turbo_stream()
+            ->update('counter')
+            ->partial($view, ['count' => 3])
+            ->render();
+
+        expect($html)->toContain('<span>3</span>');
+    });
+
+    it('chains view() between multiple streams', function () {
+        $view = makeTempBladeView('<p>{{ $body }}</p>');
+
+        $html = turbo_stream()
+            ->append('messages')->view($view, ['body' => 'first'])
+            ->update('counter')->view($view, ['body' => 'second'])
+            ->render();
+
+        expect($html)
+            ->toContain('target="messages"')
+            ->toContain('<p>first</p>')
+            ->toContain('target="counter"')
+            ->toContain('<p>second</p>');
+    });
+
+    it('throws when view() is called before any stream is added', function () {
+        turbo_stream()->view('whatever');
+    })->throws(LogicException::class, 'Cannot call view() on TurboStreamBuilder before adding a stream.');
+
+    it('throws when partial() is called before any stream is added', function () {
+        turbo_stream()->partial('whatever');
+    })->throws(LogicException::class, 'Cannot call view() on TurboStreamBuilder before adding a stream.');
+});
+
+describe('escape() builder helper', function () {
+    it('escapes the last stream content', function () {
+        $html = turbo_stream()
+            ->update('greeting', '<script>x</script>')
+            ->escape()
+            ->render();
+
+        expect($html)
+            ->toContain('&lt;script&gt;')
+            ->not->toContain('<script>x');
+    });
+
+    it('only applies to the most recently added stream', function () {
+        $html = turbo_stream()
+            ->update('a', '<b>raw</b>')
+            ->update('b', '<b>escaped</b>')
+            ->escape()
+            ->render();
+
+        expect($html)
+            ->toContain('<b>raw</b>')
+            ->toContain('&lt;b&gt;escaped&lt;/b&gt;');
+    });
+
+    it('throws when escape() is called before any stream is added', function () {
+        turbo_stream()->escape();
+    })->throws(LogicException::class, 'Cannot call escape() on TurboStreamBuilder before adding a stream.');
+
+    it('does not escape content set by view() even when escape() is called', function () {
+        $view = makeTempBladeView('<p>safe</p>');
+
+        $html = turbo_stream()
+            ->update('greeting')
+            ->view($view, [])
+            ->escape()
+            ->render();
+
+        expect($html)
+            ->toContain('<p>safe</p>')
+            ->not->toContain('&lt;p&gt;');
+    });
+});
+
 describe('renderable contracts', function () {
     it('implements Htmlable, Responsable, StreamInterface and Stringable', function () {
         $builder = turbo_stream()->append('messages', '<p>Hi</p>');
