@@ -377,6 +377,20 @@ describe('escape() builder helper', function () {
     it('throws when escape() is called before any stream is added', function () {
         turbo_stream()->escape();
     })->throws(LogicException::class, 'Cannot call escape() on TurboStreamBuilder before adding a stream.');
+
+    it('does not escape content set by view() even when escape() is called', function () {
+        $view = makeTempBladeView('<p>safe</p>');
+
+        $html = turbo_stream()
+            ->update('greeting')
+            ->view($view, [])
+            ->escape()
+            ->render();
+
+        expect($html)
+            ->toContain('<p>safe</p>')
+            ->not->toContain('&lt;p&gt;');
+    });
 });
 
 describe('renderable contracts', function () {

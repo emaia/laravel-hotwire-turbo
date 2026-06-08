@@ -16,13 +16,15 @@ class Stream implements Htmlable, StreamInterface, Stringable
 {
     use Macroable;
 
+    protected bool $escapeContent = false;
+
+    protected bool $contentFromView = false;
+
     /**
      * @param  array<string, string>  $attributes
      *
      * @throws Throwable
      */
-    protected bool $escapeContent = false;
-
     public function __construct(
         protected Action|string $action,
         protected string $target = '',
@@ -40,6 +42,7 @@ class Stream implements Htmlable, StreamInterface, Stringable
 
         if ($content instanceof View) {
             $this->content = $content->render();
+            $this->contentFromView = true;
         }
     }
 
@@ -53,6 +56,7 @@ class Stream implements Htmlable, StreamInterface, Stringable
     public function view(string $view, array $data = []): static
     {
         $this->content = view($view, $data)->render();
+        $this->contentFromView = true;
 
         return $this;
     }
@@ -239,7 +243,7 @@ class Stream implements Htmlable, StreamInterface, Stringable
             array_flip(['method', 'scroll', 'request-id']),
         );
 
-        $content = $this->escapeContent && is_string($this->content)
+        $content = $this->escapeContent && is_string($this->content) && ! $this->contentFromView
             ? e($this->content)
             : $this->content;
 

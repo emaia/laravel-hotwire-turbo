@@ -351,14 +351,42 @@ describe('escape() content flag', function () {
         expect($html)->toContain('<strong>hi</strong>');
     });
 
-    it('does not double-escape view-rendered content', function () {
-        // view() output is already HTML; escape() would double-escape it.
-        // This documents that escape() is intended for user-supplied strings.
+    it('does not escape content set by view() even when escape() is called', function () {
         $view = makeTempBladeView('<p>safe</p>');
 
-        $html = Stream::update('greeting')->view($view, [])->render();
+        $html = Stream::update('greeting')
+            ->view($view, [])
+            ->escape()
+            ->render();
 
-        expect($html)->toContain('<p>safe</p>');
+        expect($html)
+            ->toContain('<p>safe</p>')
+            ->not->toContain('&lt;p&gt;');
+    });
+
+    it('does not escape content set by partial() even when escape() is called', function () {
+        $view = makeTempBladeView('<span>{{ $label }}</span>');
+
+        $html = Stream::update('counter')
+            ->partial($view, ['label' => 'fresh'])
+            ->escape()
+            ->render();
+
+        expect($html)
+            ->toContain('<span>fresh</span>')
+            ->not->toContain('&lt;span&gt;');
+    });
+
+    it('does not escape content passed as View instance to the constructor', function () {
+        $view = makeTempBladeView('<p>{{ $body }}</p>');
+
+        $html = Stream::update('greeting', view($view, ['body' => 'safe']))
+            ->escape()
+            ->render();
+
+        expect($html)
+            ->toContain('<p>safe</p>')
+            ->not->toContain('&lt;p&gt;');
     });
 });
 
