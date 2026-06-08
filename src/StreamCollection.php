@@ -2,9 +2,11 @@
 
 namespace Emaia\LaravelHotwireTurbo;
 
+use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Support\Collection;
+use Stringable;
 
-class StreamCollection extends Collection implements StreamInterface
+class StreamCollection extends Collection implements Htmlable, StreamInterface, Stringable
 {
     public function __construct($items = [])
     {
@@ -38,5 +40,15 @@ class StreamCollection extends Collection implements StreamInterface
     public static function make($items = [], ...$args): static
     {
         return new static($items);
+    }
+
+    public function toHtml(): string
+    {
+        return $this->render();
+    }
+
+    public function __toString(): string
+    {
+        return $this->render();
     }
 }

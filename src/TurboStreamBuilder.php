@@ -3,11 +3,13 @@
 namespace Emaia\LaravelHotwireTurbo;
 
 use Emaia\LaravelHotwireTurbo\Response as TurboResponse;
+use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Contracts\Support\Responsable;
 use Illuminate\Support\Traits\Conditionable;
 use Illuminate\Support\Traits\Macroable;
+use Stringable;
 
-class TurboStreamBuilder implements Responsable, StreamInterface
+class TurboStreamBuilder implements Htmlable, Responsable, StreamInterface, Stringable
 {
     use Conditionable, Macroable;
 
@@ -146,5 +148,15 @@ class TurboStreamBuilder implements Responsable, StreamInterface
     public function toResponse($request): TurboResponse
     {
         return $this->withResponse();
+    }
+
+    public function toHtml(): string
+    {
+        return $this->render();
+    }
+
+    public function __toString(): string
+    {
+        return $this->render();
     }
 }

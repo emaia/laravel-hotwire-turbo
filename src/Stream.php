@@ -4,13 +4,18 @@ namespace Emaia\LaravelHotwireTurbo;
 
 use Emaia\LaravelHotwireTurbo\Enums\Action;
 use Emaia\LaravelHotwireTurbo\Views\RecordIdentifier;
+use Illuminate\Contracts\Support\Htmlable;
+use Illuminate\Support\Traits\Macroable;
 use Illuminate\View\ComponentAttributeBag;
 use Illuminate\View\View;
 use InvalidArgumentException;
+use Stringable;
 use Throwable;
 
-class Stream implements StreamInterface
+class Stream implements Htmlable, StreamInterface, Stringable
 {
+    use Macroable;
+
     /**
      * @param  array<string, string>  $attributes
      *
@@ -47,82 +52,129 @@ class Stream implements StreamInterface
 
     /**
      * @param  array<string, string>  $attributes
+     *
+     * @throws Throwable
      */
     public static function action(string $action, string|object $target, mixed $content = '', array $attributes = []): static
     {
         return new static($action, self::resolveTarget($target), $content, '', $attributes);
     }
 
+    /**
+     * @throws Throwable
+     */
     public static function append(string|object $target, mixed $content = ''): static
     {
         return new static(Action::APPEND, self::resolveTarget($target), $content);
     }
 
+    /**
+     * @throws Throwable
+     */
     public static function prepend(string|object $target, mixed $content = ''): static
     {
         return new static(Action::PREPEND, self::resolveTarget($target), $content);
     }
 
+    /**
+     * @throws Throwable
+     */
     public static function replace(string|object $target, mixed $content = '', ?string $method = null): static
     {
         return new static(Action::REPLACE, self::resolveTarget($target), $content, attributes: array_filter(['method' => $method]));
     }
 
+    /**
+     * @throws Throwable
+     */
     public static function update(string|object $target, mixed $content = '', ?string $method = null): static
     {
         return new static(Action::UPDATE, self::resolveTarget($target), $content, attributes: array_filter(['method' => $method]));
     }
 
+    /**
+     * @throws Throwable
+     */
     public static function remove(string|object $target): static
     {
         return new static(Action::REMOVE, self::resolveTarget($target));
     }
 
+    /**
+     * @throws Throwable
+     */
     public static function after(string|object $target, mixed $content = ''): static
     {
         return new static(Action::AFTER, self::resolveTarget($target), $content);
     }
 
+    /**
+     * @throws Throwable
+     */
     public static function before(string|object $target, mixed $content = ''): static
     {
         return new static(Action::BEFORE, self::resolveTarget($target), $content);
     }
 
+    /**
+     * @throws Throwable
+     */
     public static function appendAll(string $targets, mixed $content = ''): static
     {
         return new static(Action::APPEND, content: $content, targets: $targets);
     }
 
+    /**
+     * @throws Throwable
+     */
     public static function prependAll(string $targets, mixed $content = ''): static
     {
         return new static(Action::PREPEND, content: $content, targets: $targets);
     }
 
+    /**
+     * @throws Throwable
+     */
     public static function replaceAll(string $targets, mixed $content = '', ?string $method = null): static
     {
         return new static(Action::REPLACE, content: $content, targets: $targets, attributes: array_filter(['method' => $method]));
     }
 
+    /**
+     * @throws Throwable
+     */
     public static function updateAll(string $targets, mixed $content = '', ?string $method = null): static
     {
         return new static(Action::UPDATE, content: $content, targets: $targets, attributes: array_filter(['method' => $method]));
     }
 
+    /**
+     * @throws Throwable
+     */
     public static function removeAll(string $targets): static
     {
         return new static(Action::REMOVE, targets: $targets);
     }
 
+    /**
+     * @throws Throwable
+     */
     public static function afterAll(string $targets, mixed $content = ''): static
     {
         return new static(Action::AFTER, content: $content, targets: $targets);
     }
 
+    /**
+     * @throws Throwable
+     */
     public static function beforeAll(string $targets, mixed $content = ''): static
     {
         return new static(Action::BEFORE, content: $content, targets: $targets);
     }
 
+    /**
+     * @throws Throwable
+     */
     public static function refresh(?string $method = null, ?string $scroll = null, ?string $requestId = null): static
     {
         return new static(Action::REFRESH, attributes: array_filter([
@@ -158,5 +210,21 @@ class Stream implements StreamInterface
             ),
             ...$viewProps,
         ])->render();
+    }
+
+    /**
+     * @throws Throwable
+     */
+    public function toHtml(): string
+    {
+        return $this->render();
+    }
+
+    /**
+     * @throws Throwable
+     */
+    public function __toString(): string
+    {
+        return $this->render();
     }
 }
