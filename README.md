@@ -853,6 +853,10 @@ class MessageControllerTest extends TestCase
 // Send request with Turbo Stream Accept header
 $this->turbo()->post('/messages', ['body' => 'Hello']);
 
+// Send request as a plain (non-Turbo) browser visit — useful to assert
+// the same endpoint still returns full-page HTML.
+$this->withoutTurbo()->get('/messages')->assertSee('Inbox');
+
 // Send request from a specific Turbo Frame
 $this->fromTurboFrame('modal')->get('/messages/create');
 
@@ -868,7 +872,14 @@ $this->turbo()
     ->post('/messages', ['body' => 'Hello'])
     ->assertTurboStream();
 
-// Assert stream count and match specific streams
+// Shorthand assertions
+$this->turbo()
+    ->post('/messages', ['body' => 'Hello'])
+    ->assertTurboStreamCount(2)
+    ->assertTurboStreamHas('append', 'messages')
+    ->assertTurboStreamHas('append', 'messages', 'Hello');  // content optional
+
+// Or use the callback form for full control
 $this->turbo()
     ->delete("/messages/{$message->id}")
     ->assertTurboStream(fn ($streams) => $streams
@@ -879,13 +890,13 @@ $this->turbo()
         )
     );
 
-// Assert content inside a stream
+// Assert content inside a stream (callback form, when matching by `targets=` CSS selector)
 $this->turbo()
     ->post('/messages', ['body' => 'Hello'])
     ->assertTurboStream(fn ($streams) => $streams
         ->hasTurboStream(fn ($stream) => $stream
-            ->where('action', 'append')
-            ->where('target', 'messages')
+            ->where('action', 'update')
+            ->where('targets', '.badge')
             ->see('Hello')
         )
     );
@@ -893,6 +904,8 @@ $this->turbo()
 // Assert response is NOT a Turbo Stream
 $this->get('/messages')->assertNotTurboStream();
 ```
+
+The shorthand `assertTurboStreamHas` matches the `target` attribute (DOM id). For streams using CSS selectors (`targets=".css"`), use the callback form shown above.
 
 ## Running Tests
 
