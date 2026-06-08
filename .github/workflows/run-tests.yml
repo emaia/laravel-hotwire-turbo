@@ -2,6 +2,7 @@ name: run-tests
 
 on:
   push:
+    branches: [main]
     paths:
       - '**.php'
       - '.github/workflows/run-tests.yml'
@@ -16,6 +17,10 @@ on:
       - 'composer.json'
       - 'composer.lock'
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   test:
     runs-on: ${{ matrix.os }}
@@ -23,7 +28,7 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        os: [ubuntu-latest, windows-latest]
+        os: [ubuntu-latest]
         php: [8.5, 8.4, 8.3, 8.2]
         laravel: [13.*, 12.*, 11.*]
         stability: [prefer-stable]
@@ -40,6 +45,22 @@ jobs:
             testbench: 9.*
             workbench: 9.*
             carbon: 2.*
+          # Windows smoke tests: only on the oldest and newest supported stacks
+          # to keep CI wall time low. Linux covers the full matrix.
+          - os: windows-latest
+            php: 8.2
+            laravel: 11.*
+            testbench: 9.*
+            workbench: 9.*
+            carbon: 2.*
+            stability: prefer-stable
+          - os: windows-latest
+            php: 8.5
+            laravel: 13.*
+            testbench: 11.*
+            workbench: 11.*
+            carbon: 3.*
+            stability: prefer-stable
         exclude:
           - laravel: 13.*
             php: 8.2
@@ -61,6 +82,19 @@ jobs:
         run: |
           echo "::add-matcher::${{ runner.tool_cache }}/php.json"
           echo "::add-matcher::${{ runner.tool_cache }}/phpunit.json"
+
+      - name: Get Composer cache directory
+        id: composer-cache
+        shell: bash
+        run: echo "dir=$(composer config cache-files-dir)" >> "$GITHUB_OUTPUT"
+
+      - name: Cache Composer downloads
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: ${{ runner.os }}-php${{ matrix.php }}-l${{ matrix.laravel }}-composer-${{ hashFiles('composer.json') }}
+          restore-keys: |
+            ${{ runner.os }}-php${{ matrix.php }}-composer-
 
       - name: Install dependencies
         shell: bash
