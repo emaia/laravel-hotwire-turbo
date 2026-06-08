@@ -2,6 +2,7 @@
 
 namespace Emaia\LaravelHotwireTurbo;
 
+use Emaia\LaravelHotwireTurbo\Exceptions\TurboStreamResponseFailedException;
 use Emaia\LaravelHotwireTurbo\Response as TurboResponse;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Contracts\Support\Responsable;
@@ -140,7 +141,7 @@ class TurboStreamBuilder implements Htmlable, Responsable, StreamInterface, Stri
      *
      * @param  array<string, mixed>  $data
      *
-     * @throws \LogicException when called before any stream has been added
+     * @throws TurboStreamResponseFailedException when called before any stream has been added
      */
     public function view(string $view, array $data = []): static
     {
@@ -154,7 +155,7 @@ class TurboStreamBuilder implements Htmlable, Responsable, StreamInterface, Stri
      *
      * @param  array<string, mixed>  $data
      *
-     * @throws \LogicException when called before any stream has been added
+     * @throws TurboStreamResponseFailedException when called before any stream has been added
      */
     public function partial(string $view, array $data = []): static
     {
@@ -164,7 +165,7 @@ class TurboStreamBuilder implements Htmlable, Responsable, StreamInterface, Stri
     /**
      * Toggle HTML escaping on the most recently added stream.
      *
-     * @throws \LogicException when called before any stream has been added
+     * @throws TurboStreamResponseFailedException when called before any stream has been added
      */
     public function escape(bool $escape = true): static
     {
@@ -178,10 +179,7 @@ class TurboStreamBuilder implements Htmlable, Responsable, StreamInterface, Stri
         $stream = $this->streams->last();
 
         if (! $stream instanceof Stream) {
-            throw new \LogicException(sprintf(
-                'Cannot call %s() on TurboStreamBuilder before adding a stream.',
-                $caller,
-            ));
+            throw TurboStreamResponseFailedException::builderEmpty($caller);
         }
 
         return $stream;

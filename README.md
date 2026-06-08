@@ -38,6 +38,7 @@ The purpose of this package is to facilitate the use of [Turbo](https://turbo.ho
     - [Turbo Stream Source](#turbo-stream-source)
   - [Turbo Drive Blade Directives](#turbo-drive-blade-directives)
   - [Turbo Drive Redirect 303](#turbo-drive-redirect-303)
+  - [Exceptions](#exceptions)
   - [Full Controller Example](#full-controller-example)
 - [Configuration](#configuration)
 - [Testing](#testing)
@@ -698,6 +699,24 @@ use Emaia\LaravelHotwireTurbo\Http\Middleware\TurboMiddleware;
 Route::middleware(TurboMiddleware::class)->group(function () {
     Route::post('/posts', [PostController::class, 'store']);
 });
+```
+
+### Exceptions
+
+When a Turbo Stream response cannot be built — missing target, non-stream item in a `StreamCollection`, or a builder method called before any stream was added — the package throws `Emaia\LaravelHotwireTurbo\Exceptions\TurboStreamResponseFailedException`.
+
+The exception extends `InvalidArgumentException` (and therefore `LogicException`), so existing catch blocks keep working. For finer-grained handling, catch the typed exception directly:
+
+```php
+use Emaia\LaravelHotwireTurbo\Exceptions\TurboStreamResponseFailedException;
+
+try {
+    return turbo_stream()->view('messages._item', compact('message'));
+} catch (TurboStreamResponseFailedException $e) {
+    // No stream was added before view(), missing target, etc.
+    report($e);
+    return back();
+}
 ```
 
 ### Full Controller Example
