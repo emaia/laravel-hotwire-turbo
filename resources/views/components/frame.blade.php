@@ -13,6 +13,8 @@
 ])
 
 @php
+$resolvedId = is_object($id) ? dom_id($id) : $id;
+
 $mergeAttrs = array_filter([
     'src'                      => $src,
     'loading'                  => $loading,
@@ -26,4 +28,4 @@ $mergeAttrs = array_filter([
     'autoscroll'               => $autoscroll ? 'autoscroll' : null,
 ], fn ($v) => $v !== null);
 @endphp
-<turbo-frame id="{{ $id }}" {{ $attributes->merge($mergeAttrs) }}>{{ $slot }}</turbo-frame>
+<turbo-frame id="{{ $resolvedId }}" {{ $attributes->merge($mergeAttrs) }}>{{ $slot }}</turbo-frame>

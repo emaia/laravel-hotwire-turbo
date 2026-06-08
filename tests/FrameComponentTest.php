@@ -1,6 +1,14 @@
 <?php
 
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Blade;
+
+class FrameTestMessage extends Model
+{
+    protected $guarded = [];
+
+    protected $table = 'messages';
+}
 
 it('renders a basic turbo frame', function () {
     $html = Blade::render('<x-turbo::frame id="my-frame">Content</x-turbo::frame>');
@@ -98,4 +106,33 @@ it('does not emit omitted optional attributes', function () {
         ->not->toContain('recurse=')
         ->not->toContain('autoscroll')
         ->not->toContain('disabled');
+});
+
+describe('model-aware id', function () {
+    it('resolves an Eloquent model to its dom_id', function () {
+        $model = new FrameTestMessage;
+        $model->id = 7;
+
+        $html = Blade::render(
+            '<x-turbo::frame :id="$model">Hello</x-turbo::frame>',
+            ['model' => $model],
+        );
+
+        expect($html)->toContain('id="frame_test_message_7"');
+    });
+
+    it('resolves a new model with no key to its create prefix', function () {
+        $html = Blade::render(
+            '<x-turbo::frame :id="$model">Form</x-turbo::frame>',
+            ['model' => new FrameTestMessage],
+        );
+
+        expect($html)->toContain('id="create_frame_test_message"');
+    });
+
+    it('still accepts string ids', function () {
+        $html = Blade::render('<x-turbo::frame id="literal">Hi</x-turbo::frame>');
+
+        expect($html)->toContain('id="literal"');
+    });
 });
