@@ -2,6 +2,18 @@
 
 All notable changes to `laravel-hotwire-turbo` will be documented in this file.
 
+## 0.11.0 - 2026-06-08
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+### What's Changed
+
+#### Added
+
+* Add [x-turbo::refreshes-with](x-turbo::refreshes-with) component, turboRequestId() macro, and Model-aware frame :id by @emaia in https://github.com/emaia/laravel-hotwire-turbo/pull/19
+* Add assertTurboStreamCount/Has shortcuts and withoutTurbo() test helper by @emaia in https://github.com/emaia/laravel-hotwire-turbo/pull/20
+
+**Full Changelog**: https://github.com/emaia/laravel-hotwire-turbo/compare/0.10.0...0.11.0
+
 ## 0.10.0 - 2026-06-08
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
@@ -110,6 +122,7 @@ turbo_stream()->morph('card', $content);
 // After (v0.8)
 turbo_stream()->replace('card', $content, method: 'morph');  // morph entire element
 turbo_stream()->update('card', $content, method: 'morph');   // morph children only
+
 
 
 
