@@ -2,11 +2,16 @@ name: Check PHP code style
 
 on:
   push:
+    branches: [main]
     paths:
       - '**.php'
   pull_request:
     paths:
       - '**.php'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
 
 jobs:
   php-code-styling:
