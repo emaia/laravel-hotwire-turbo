@@ -164,5 +164,52 @@ class TurboServiceProvider extends PackageServiceProvider
 
             return $this;
         });
+
+        TestResponse::macro('assertTurboStreamCount', function (int $expected): TestResponse {
+            /** @var TestResponse $this */
+            $contentType = $this->headers->get('Content-Type', '');
+
+            Assert::assertStringContainsString(
+                'text/vnd.turbo-stream.html',
+                $contentType,
+                'Response Content-Type is not a Turbo Stream.',
+            );
+
+            $streams = ConvertTestResponseToTurboStreamCollection::convert($this);
+
+            Assert::assertCount(
+                $expected,
+                $streams,
+                sprintf('Expected %d turbo stream(s), found %d.', $expected, $streams->count()),
+            );
+
+            return $this;
+        });
+
+        TestResponse::macro('assertTurboStreamHas', function (string $action, string $target, ?string $content = null): TestResponse {
+            /** @var TestResponse $this */
+            $contentType = $this->headers->get('Content-Type', '');
+
+            Assert::assertStringContainsString(
+                'text/vnd.turbo-stream.html',
+                $contentType,
+                'Response Content-Type is not a Turbo Stream.',
+            );
+
+            $streams = ConvertTestResponseToTurboStreamCollection::convert($this);
+            $assertable = new AssertableTurboStream($streams);
+
+            $assertable->hasTurboStream(function ($matcher) use ($action, $target, $content) {
+                $matcher = $matcher->where('action', $action)->where('target', $target);
+
+                if ($content !== null) {
+                    $matcher = $matcher->see($content);
+                }
+
+                return $matcher;
+            });
+
+            return $this;
+        });
     }
 }

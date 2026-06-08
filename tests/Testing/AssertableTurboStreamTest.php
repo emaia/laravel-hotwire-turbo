@@ -4,6 +4,7 @@ use Emaia\LaravelHotwireTurbo\Testing\AssertableTurboStream;
 use Emaia\LaravelHotwireTurbo\Testing\ConvertTestResponseToTurboStreamCollection;
 use Emaia\LaravelHotwireTurbo\Testing\InteractsWithTurbo;
 use Illuminate\Support\Facades\Route;
+use PHPUnit\Framework\AssertionFailedError;
 
 uses(InteractsWithTurbo::class);
 
@@ -81,4 +82,106 @@ it('parses turbo streams from response', function () {
     $streams = ConvertTestResponseToTurboStreamCollection::convert($response);
 
     expect($streams)->toHaveCount(2);
+});
+
+describe('assertTurboStreamCount', function () {
+    it('passes when the count matches', function () {
+        $this->turbo()
+            ->get('/turbo-test')
+            ->assertTurboStreamCount(2);
+    });
+
+    it('fails when the count does not match', function () {
+        $this->turbo()
+            ->get('/turbo-test')
+            ->assertTurboStreamCount(5);
+    })->throws(AssertionFailedError::class, 'Expected 5 turbo stream(s), found 2.');
+
+    it('fails when response is not a Turbo Stream', function () {
+        $this->get('/normal-test')->assertTurboStreamCount(0);
+    })->throws(AssertionFailedError::class, 'Response Content-Type is not a Turbo Stream.');
+});
+
+describe('assertTurboStreamHas', function () {
+    it('passes when a matching stream is found', function () {
+        $this->turbo()
+            ->get('/turbo-test')
+            ->assertTurboStreamHas('append', 'messages')
+            ->assertTurboStreamHas('remove', 'modal');
+    });
+
+    it('passes when content matches inside the template', function () {
+        $this->turbo()
+            ->get('/turbo-test')
+            ->assertTurboStreamHas('append', 'messages', 'Hello');
+    });
+
+    it('fails when no stream matches action+target', function () {
+        $this->turbo()
+            ->get('/turbo-test')
+            ->assertTurboStreamHas('update', 'counter');
+    })->throws(AssertionFailedError::class, 'Expected to find a matching Turbo Stream');
+
+    it('fails when content does not appear in the matching stream', function () {
+        $this->turbo()
+            ->get('/turbo-test')
+            ->assertTurboStreamHas('append', 'messages', 'Missing-content-string');
+    })->throws(AssertionFailedError::class);
+
+    it('fails when response is not a Turbo Stream', function () {
+        $this->get('/normal-test')->assertTurboStreamHas('append', 'messages');
+    })->throws(AssertionFailedError::class, 'Response Content-Type is not a Turbo Stream.');
+});
+
+describe('withoutTurbo()', function () {
+    it('sends Accept: text/html, opting out of Turbo Stream responses', function () {
+        Route::get('/dual', function () {
+            if (request()->wantsTurboStream()) {
+                return turbo_stream()->append('messages', '<p>Turbo</p>')->withResponse();
+            }
+
+            return response('Plain page');
+        });
+
+        $this->withoutTurbo()
+            ->get('/dual')
+            ->assertOk()
+            ->assertSee('Plain page')
+            ->assertNotTurboStream();
+    });
+
+    it('overrides a prior turbo() call when chained', function () {
+        Route::get('/dual-chain', function () {
+            if (request()->wantsTurboStream()) {
+                return turbo_stream()->append('messages', '<p>Turbo</p>')->withResponse();
+            }
+
+            return response('Plain page');
+        });
+
+        $this->turbo()
+            ->withoutTurbo()
+            ->get('/dual-chain')
+            ->assertSee('Plain page')
+            ->assertNotTurboStream();
+    });
+
+    it('clears a Turbo-Frame header previously set by fromTurboFrame()', function () {
+        Route::get('/echo-frame', function () {
+            return response()->json([
+                'has_frame' => request()->wasFromTurboFrame(),
+                'frame' => request()->header('Turbo-Frame'),
+                'accept' => request()->header('Accept'),
+            ]);
+        });
+
+        $payload = $this->fromTurboFrame('modal')
+            ->withoutTurbo()
+            ->get('/echo-frame')
+            ->json();
+
+        expect($payload['has_frame'])->toBeFalse();
+        expect($payload['frame'])->toBeNull();
+        expect($payload['accept'])->toBe('text/html');
+    });
 });
