@@ -2,6 +2,24 @@
 
 All notable changes to `laravel-hotwire-turbo` will be documented in this file.
 
+## 0.10.0 - 2026-06-08
+
+<!-- Release notes generated using configuration in .github/release.yml at main -->
+### What's Changed
+
+#### Added
+
+* Make streams echoable in Blade via Htmlable; expose Stream::macro() by @emaia in https://github.com/emaia/laravel-hotwire-turbo/pull/15
+* Add view()/partial() and escape() content helpers on Stream and TurboStreamBuilder by @emaia in https://github.com/emaia/laravel-hotwire-turbo/pull/16
+* Introduce TurboStreamResponseFailedException for stream build failures (back-compat) by @emaia in https://github.com/emaia/laravel-hotwire-turbo/pull/17
+* Trim Windows CI matrix to 2 smoke jobs + cache Composer downloads by @emaia in https://github.com/emaia/laravel-hotwire-turbo/pull/18
+
+#### Documentation
+
+* Configure auto-generated release notes by category by @emaia in https://github.com/emaia/laravel-hotwire-turbo/pull/14
+
+**Full Changelog**: https://github.com/emaia/laravel-hotwire-turbo/compare/0.9.3...0.10.0
+
 ## 0.9.3 - 2026-05-29
 
 **Full Changelog**: https://github.com/emaia/laravel-hotwire-turbo/compare/0.9.2...0.9.3
@@ -92,6 +110,7 @@ turbo_stream()->morph('card', $content);
 // After (v0.8)
 turbo_stream()->replace('card', $content, method: 'morph');  // morph entire element
 turbo_stream()->update('card', $content, method: 'morph');   // morph children only
+
 
 
 
