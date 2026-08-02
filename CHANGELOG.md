@@ -2,6 +2,23 @@
 
 All notable changes to `laravel-hotwire-turbo` will be documented in this file.
 
+## 0.12.0 - 2026-08-02
+
+<!-- Release notes generated using configuration in .github/release.yml at 0.12.0 -->
+### What's Changed
+
+#### Added
+
+* Expose validated Turbo Frame source URLs by @emaia in https://github.com/emaia/laravel-hotwire-turbo/pull/25
+
+#### Other Changes
+
+* Bump actions/cache from 4 to 5 by @dependabot[bot] in https://github.com/emaia/laravel-hotwire-turbo/pull/22
+* Bump actions/checkout from 6 to 7 by @dependabot[bot] in https://github.com/emaia/laravel-hotwire-turbo/pull/23
+* Bump actions/cache from 5 to 6 by @dependabot[bot] in https://github.com/emaia/laravel-hotwire-turbo/pull/24
+
+**Full Changelog**: https://github.com/emaia/laravel-hotwire-turbo/compare/0.11.1...0.12.0
+
 ## 0.11.1 - 2026-06-08
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
@@ -133,6 +150,7 @@ turbo_stream()->morph('card', $content);
 // After (v0.8)
 turbo_stream()->replace('card', $content, method: 'morph');  // morph entire element
 turbo_stream()->update('card', $content, method: 'morph');   // morph children only
+
 
 
 
