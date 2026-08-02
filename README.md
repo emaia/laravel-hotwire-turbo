@@ -412,6 +412,12 @@ if (request()->wasFromTurboFrame('modal')) {
     // ...
 }
 
+// Read the destination frame id without accessing the header directly.
+$frameId = request()->turboFrameId(); // "modal" or null
+
+// Read the explicit, redirect-safe hint for the frame contents URL.
+$source = request()->turboFrameSource(); // string|null
+
 // Read the X-Turbo-Request-Id header (set by Turbo Drive on every visit).
 // Useful as a debounce key for refresh streams.
 $requestId = request()->turboRequestId();    // string|null
@@ -496,25 +502,65 @@ redirects that don't rely on session state or browser headers:
 </turbo-frame>
 ```
 
-This renders a hidden input with the current page URL, ensuring the redirect
-target is always correct — even with lazy-loaded frames or multiple browser tabs.
+This renders a hidden input with the URL of the request that rendered the form.
+For a modal loaded from `/tasks/create`, that source is `/tasks/create`, even when
+the visible host page remains `/tasks`. This deterministic input does not depend
+on session state and takes precedence over the optional client-side header.
+
+URL fragments are preserved when an explicit candidate contains one. Browsers do
+not send fragments to the server, so `url()->full()` cannot reconstruct a fragment
+that was never part of the request.
+
+#### Reading the Explicit Frame Source
+
+Controllers and other request classes can reuse the same resolution policy:
+
+```php
+if ($source = $request->turboFrameSource()) {
+    return redirect()->to($source);
+}
+```
+
+`turboFrameSource()` returns the first valid `_turbo_frame_src` input or
+`X-Turbo-Frame-Src` header. It returns `null` outside Turbo Frame requests or when
+no explicit candidate is valid. It deliberately does not consult the session or
+`Referer`, so callers never mistake the host page for the frame source.
+
+Both explicit sources are client-controlled redirect hints. Validation makes them
+safe for this redirect policy, but does not prove which page rendered the frame and
+must never be used as an authorization signal. `turboFrameId()` trims a non-empty
+`Turbo-Frame` header and returns `null` for an absent or blank header;
+`wasFromTurboFrame()` uses the same strict semantics.
 
 #### Redirect Source Priority
 
 When validation fails inside a Turbo Frame, the redirect URL is resolved in this order:
 
-| Priority | Source                     | Notes                                                |
-|----------|----------------------------|------------------------------------------------------|
-| 1        | `_turbo_frame_src` input   | Set by `@turboFrameSrc` — deterministic, server-side |
-| 2        | `X-Turbo-Frame-Src` header | Optional, can be set by client-side JS if desired    |
-| 3        | `session('_previous.url')` | Laravel session fallback for simple cases            |
-| 4        | `RuntimeException`         | Explicit error when all sources fail                 |
+| Priority | Source                     | Public macro | Notes                                                |
+|----------|----------------------------|--------------|------------------------------------------------------|
+| 1        | `_turbo_frame_src` input   | Yes          | Set by `@turboFrameSrc` — deterministic, server-side |
+| 2        | `X-Turbo-Frame-Src` header | Yes          | Optional client-side fallback                        |
+| 3        | `session('_previous.url')` | No           | Internal `TurboFormRequest` compatibility fallback   |
+| 4        | `RuntimeException`         | No           | Explicit error when no safe source exists            |
 
-External URLs from levels 1 and 2 are validated against trusted hosts. Untrusted
-URLs are rejected (redirects fall back to `/`) to prevent open redirect attacks.
+Each candidate is validated before the next source is considered. An invalid input
+therefore does not block a valid header or session fallback. The session URL goes
+through the same sanitizer but remains excluded from `turboFrameSource()` because it
+may describe another tab, an intermediate navigation, or the host page.
 
-If no source URL can be resolved, a `RuntimeException` is thrown with a clear message
-asking the developer to add the `@turboFrameSrc` directive to the form.
+Root-relative paths and absolute HTTP(S) URLs on trusted hosts are accepted. Other
+schemes, protocol-relative URLs, malformed or browser-ambiguous authorities,
+userinfo, control characters, backslashes, and untrusted hosts are rejected. This
+is a trusted-host policy, not a strict same-origin policy:
+`trusted_redirect_hosts` intentionally compares hosts without treating scheme or
+port as trust boundaries.
+
+Well-formed percent-encoded path, query and fragment data is preserved as received;
+the resolver does not decode it before validating or returning the URL.
+
+If no safe source URL can be resolved, `TurboFormRequest` throws a `RuntimeException`
+asking the developer to add `@turboFrameSrc`. Invalid sources no longer redirect to
+`/`, because that response usually cannot repopulate the requesting frame.
 
 ### Blade Components
 
@@ -830,9 +876,10 @@ return [
     // Set to false to register the TurboMiddleware manually.
     'auto_redirect_303' => true,
 
-    // Extra hosts trusted for TurboFormRequest redirects. The current
-    // request host and APP_URL host are always trusted; anything else
-    // falls back to "/". Use for staging domains or reverse proxies.
+    // Extra hosts trusted for TurboFormRequest redirects. Only root-relative
+    // paths and absolute HTTP(S) URLs are accepted. The current request host
+    // and APP_URL host are always trusted. Trust is host-only in this version;
+    // scheme and port are not compared.
     'trusted_redirect_hosts' => [],
 ];
 ```
