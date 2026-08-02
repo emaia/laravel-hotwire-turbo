@@ -3,6 +3,7 @@
 namespace Emaia\LaravelHotwireTurbo;
 
 use Closure;
+use Emaia\LaravelHotwireTurbo\Http\FrameSourceResolver;
 use Emaia\LaravelHotwireTurbo\Http\Middleware\TurboMiddleware;
 use Emaia\LaravelHotwireTurbo\Models\Name;
 use Emaia\LaravelHotwireTurbo\Response as TurboResponse;
@@ -54,12 +55,20 @@ class TurboServiceProvider extends PackageServiceProvider
             return Str::contains(request()->header('Accept', ''), 'text/vnd.turbo-stream');
         });
 
-        Request::macro('wasFromTurboFrame', function (?string $frame = null): bool {
-            if (! $frame) {
-                return $this->hasHeader('Turbo-Frame');
-            }
+        Request::macro('turboFrameId', function (): ?string {
+            $frame = $this->header('Turbo-Frame');
 
-            return $this->header('Turbo-Frame', null) === $frame;
+            return is_string($frame) && trim($frame) !== '' ? trim($frame) : null;
+        });
+
+        Request::macro('wasFromTurboFrame', function (?string $frame = null): bool {
+            $frameId = $this->turboFrameId();
+
+            return $frame === null ? $frameId !== null : $frameId === $frame;
+        });
+
+        Request::macro('turboFrameSource', function (): ?string {
+            return app(FrameSourceResolver::class)->resolve($this);
         });
 
         Request::macro('turboRequestId', function (): ?string {

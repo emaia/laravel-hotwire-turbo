@@ -14,8 +14,25 @@ class ProfileUpdateRequest extends TurboFormRequest
     }
 }
 
+class PreparedFrameProfileUpdateRequest extends TurboFormRequest
+{
+    protected function prepareForValidation(): void
+    {
+        $this->headers->set('Turbo-Frame', 'profile-form');
+    }
+
+    public function rules(): array
+    {
+        return ['name' => 'required'];
+    }
+}
+
 beforeEach(function () {
     Route::post('/profile', function (ProfileUpdateRequest $request) {
+        // Validation failed, never reached
+    });
+
+    Route::post('/prepared-profile', function (PreparedFrameProfileUpdateRequest $request) {
         // Validation failed, never reached
     });
 });
@@ -35,6 +52,38 @@ it('falls back to session previous url when _turbo_frame_src is absent', functio
 
     $response = $this->fromTurboFrame('profile-form')
         ->post('/profile', ['name' => '']);
+
+    $response->assertRedirect('/dashboard');
+});
+
+it('uses X-Turbo-Frame-Src when the explicit input is absent', function () {
+    $response = $this->fromTurboFrame('profile-form')
+        ->withHeader('X-Turbo-Frame-Src', '/profile?tab=header')
+        ->post('/profile', ['name' => '']);
+
+    $response->assertRedirect('/profile?tab=header');
+});
+
+it('tries the header after an invalid explicit input', function () {
+    $response = $this->fromTurboFrame('profile-form')
+        ->withHeader('X-Turbo-Frame-Src', '/profile?tab=header')
+        ->post('/profile', [
+            'name' => '',
+            '_turbo_frame_src' => ['https://evil.example'],
+        ]);
+
+    $response->assertRedirect('/profile?tab=header');
+});
+
+it('tries the session fallback after invalid explicit sources', function () {
+    session()->setPreviousUrl(url('/dashboard'));
+
+    $response = $this->fromTurboFrame('profile-form')
+        ->withHeader('X-Turbo-Frame-Src', 'javascript:alert(1)')
+        ->post('/profile', [
+            'name' => '',
+            '_turbo_frame_src' => 'https://evil.example/phishing',
+        ]);
 
     $response->assertRedirect('/dashboard');
 });
@@ -60,20 +109,33 @@ it('accepts relative URL in _turbo_frame_src', function () {
     $response->assertRedirect('/profile?tab=settings');
 });
 
-it('rejects external URL in _turbo_frame_src to prevent open redirect', function () {
-    $response = $this->fromTurboFrame('profile-form')
+it('throws when every provided source is invalid', function () {
+    $this->withoutExceptionHandling();
+    session()->setPreviousUrl('');
+
+    $this->expectException(RuntimeException::class);
+
+    $this->fromTurboFrame('profile-form')
+        ->withHeader('X-Turbo-Frame-Src', 'javascript:alert(1)')
         ->post('/profile', [
             'name' => '',
             '_turbo_frame_src' => 'https://evil.com/phishing',
         ]);
-
-    $response->assertRedirect('/');
 });
 
 it('does not alter redirect for non-turbo-frame requests', function () {
     $response = $this->post('/profile', ['name' => '']);
 
     $response->assertRedirect('/');
+});
+
+it('uses the prepared FormRequest to detect the frame request', function () {
+    $response = $this->post('/prepared-profile', [
+        'name' => '',
+        '_turbo_frame_src' => '/prepared-profile',
+    ]);
+
+    $response->assertRedirect('/prepared-profile');
 });
 
 it('trusts the current request host when it differs from APP_URL host', function () {
