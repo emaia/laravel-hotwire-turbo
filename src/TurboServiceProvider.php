@@ -13,30 +13,28 @@ use Illuminate\Contracts\Http\Kernel;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Request;
 use Illuminate\Support\Facades\Response;
+use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;
 use Illuminate\View\Compilers\BladeCompiler;
 use Illuminate\View\View;
 use PHPUnit\Framework\Assert;
-use Spatie\LaravelPackageTools\Package;
-use Spatie\LaravelPackageTools\PackageServiceProvider;
 
-class TurboServiceProvider extends PackageServiceProvider
+class TurboServiceProvider extends ServiceProvider
 {
-    public function configurePackage(Package $package): void
+    public function register(): void
     {
-        /*
-         * This class is a Package Service Provider
-         *
-         * More info: https://github.com/spatie/laravel-package-tools
-         */
-        $package
-            ->name('laravel-turbo')
-            ->hasConfigFile('turbo');
+        $this->mergeConfigFrom(__DIR__.'/../config/turbo.php', 'turbo');
     }
 
-    public function packageBooted(): void
+    public function boot(): void
     {
+        if ($this->app->runningInConsole()) {
+            $this->publishes([
+                __DIR__.'/../config/turbo.php' => config_path('turbo.php'),
+            ], 'turbo-config');
+        }
+
         if (config('turbo.auto_redirect_303', true)) {
             $this->app->make(Kernel::class)->pushMiddleware(TurboMiddleware::class);
         }
