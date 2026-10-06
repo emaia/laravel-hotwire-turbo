@@ -27,6 +27,11 @@ class StreamCollection extends Collection implements Htmlable, StreamInterface, 
         }, '');
     }
 
+    /**
+     * Preserve the concrete collection type when adding a stream.
+     *
+     * @phpstan-this-out $this
+     */
     public function add($item): static
     {
         if (! $item instanceof Stream) {

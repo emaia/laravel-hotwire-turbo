@@ -72,6 +72,25 @@ it('asserts turbo stream with content', function () {
         );
 });
 
+it('preserves UTF-8 content and attributes in turbo stream assertions', function () {
+    Route::get('/turbo-utf8-test', function () {
+        return turbo_stream()
+            ->append('notificações', '<p>Olá, ação!</p>')
+            ->remove('modal')
+            ->withResponse();
+    });
+
+    $this->turbo()
+        ->get('/turbo-utf8-test')
+        ->assertTurboStreamCount(2)
+        ->assertTurboStream(fn (AssertableTurboStream $streams) => $streams
+            ->hasTurboStream(fn ($stream) => $stream
+                ->where('target', 'notificações')
+                ->see('Olá, ação!')
+            )
+        );
+});
+
 it('asserts not turbo stream', function () {
     $this->get('/normal-test')->assertNotTurboStream();
 });

@@ -17,7 +17,7 @@ class ConvertTestResponseToTurboStreamCollection
         $dom = new DOMDocument;
 
         libxml_use_internal_errors(true);
-        $dom->loadHTML($response->getContent(), LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD);
+        $dom->loadHTML('<?xml encoding="UTF-8"?>'.$response->getContent(), LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD);
         libxml_clear_errors();
 
         $elements = $dom->getElementsByTagName('turbo-stream');
