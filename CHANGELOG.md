@@ -2,6 +2,17 @@
 
 All notable changes to `laravel-hotwire-turbo` will be documented in this file.
 
+## 0.12.2 - 2026-10-06
+
+<!-- Release notes generated using configuration in .github/release.yml at 3f555598cc2baf95cd7e6e02a71ad32db9d0a16d -->
+### What's Changed
+
+#### Fixed
+
+* Fix UTF-8 parsing in Turbo Stream assertions by @emaia in https://github.com/emaia/laravel-hotwire-turbo/pull/27
+
+**Full Changelog**: https://github.com/emaia/laravel-hotwire-turbo/compare/0.12.1...0.12.2
+
 ## 0.12.1 - 2026-08-25
 
 <!-- Release notes generated using configuration in .github/release.yml at main -->
@@ -161,6 +172,7 @@ turbo_stream()->morph('card', $content);
 // After (v0.8)
 turbo_stream()->replace('card', $content, method: 'morph');  // morph entire element
 turbo_stream()->update('card', $content, method: 'morph');   // morph children only
+
 
 
 
