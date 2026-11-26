@@ -532,6 +532,12 @@ must never be used as an authorization signal. `turboFrameId()` trims a non-empt
 `Turbo-Frame` header and returns `null` for an absent or blank header;
 `wasFromTurboFrame()` uses the same strict semantics.
 
+`wantsTurboStream()`, `wasFromTurboFrame()`, `turboFrameId()` and `turboFrameSource()` mark the request as potentially
+varying by Turbo headers, even when those headers are absent. HTTP middleware can initialize tracking with
+`Emaia\LaravelHotwireTurbo\Http\TurboRequestVariation::track($request)` before dispatch, then check `isMarked($request)`
+after dispatch. Initializing before dispatch also tracks calls made on Laravel's `FormRequest` copies. This signal
+does not set response headers or prevent a cache from serving an existing entry.
+
 #### Redirect Source Priority
 
 When validation fails inside a Turbo Frame, the redirect URL is resolved in this order:

@@ -1,5 +1,27 @@
 <?php
 
+use Emaia\LaravelHotwireTurbo\Http\TurboRequestVariation;
+use Illuminate\Http\Request;
+
+it('marks the request when negotiating Turbo even without variant headers', function (string $macro) {
+    $request = Request::create('/');
+
+    expect(TurboRequestVariation::isMarked($request))->toBeFalse();
+    $request->{$macro}();
+    expect(TurboRequestVariation::isMarked($request))->toBeTrue();
+})->with(['wantsTurboStream', 'wasFromTurboFrame', 'turboFrameId', 'turboFrameSource']);
+
+it('shares the variation state with a copy of the tracked request', function () {
+    $request = Request::create('/');
+    TurboRequestVariation::track($request);
+
+    $copy = Request::createFrom($request);
+    expect($copy->wasFromTurboFrame())->toBeFalse(); // @phpstan-ignore method.notFound
+
+    expect(TurboRequestVariation::isMarked($request))->toBeTrue()
+        ->and(TurboRequestVariation::isMarked(Request::create('/')))->toBeFalse();
+});
+
 it('detects turbo stream accept header', function () {
     $response = $this->call('GET', '/', [], [], [], [
         'HTTP_ACCEPT' => 'text/vnd.turbo-stream.html, text/html',

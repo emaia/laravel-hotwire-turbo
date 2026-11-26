@@ -5,6 +5,7 @@ namespace Emaia\LaravelHotwireTurbo;
 use Closure;
 use Emaia\LaravelHotwireTurbo\Http\FrameSourceResolver;
 use Emaia\LaravelHotwireTurbo\Http\Middleware\TurboMiddleware;
+use Emaia\LaravelHotwireTurbo\Http\TurboRequestVariation;
 use Emaia\LaravelHotwireTurbo\Models\Name;
 use Emaia\LaravelHotwireTurbo\Response as TurboResponse;
 use Emaia\LaravelHotwireTurbo\Testing\AssertableTurboStream;
@@ -50,10 +51,14 @@ class TurboServiceProvider extends ServiceProvider
         });
 
         Request::macro('wantsTurboStream', function (): bool {
-            return Str::contains(request()->header('Accept', ''), 'text/vnd.turbo-stream');
+            TurboRequestVariation::mark($this);
+
+            return Str::contains($this->header('Accept', ''), 'text/vnd.turbo-stream');
         });
 
         Request::macro('turboFrameId', function (): ?string {
+            TurboRequestVariation::mark($this);
+
             $frame = $this->header('Turbo-Frame');
 
             return is_string($frame) && trim($frame) !== '' ? trim($frame) : null;
@@ -66,6 +71,8 @@ class TurboServiceProvider extends ServiceProvider
         });
 
         Request::macro('turboFrameSource', function (): ?string {
+            TurboRequestVariation::mark($this);
+
             return app(FrameSourceResolver::class)->resolve($this);
         });
 
