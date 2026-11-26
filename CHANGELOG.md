@@ -2,6 +2,21 @@
 
 All notable changes to `laravel-hotwire-turbo` will be documented in this file.
 
+## 0.13.0 - 2026-11-26
+
+<!-- Release notes generated using configuration in .github/release.yml at 72e1e7643adfab489e0fd22df1981b939b6135e9 -->
+### What's Changed
+
+#### Added
+
+* Track request variation when consulting Turbo headers by @emaia in https://github.com/emaia/laravel-hotwire-turbo/pull/28
+
+#### Removed
+
+* Drop Laravel 11 support by @emaia in https://github.com/emaia/laravel-hotwire-turbo/pull/29
+
+**Full Changelog**: https://github.com/emaia/laravel-hotwire-turbo/compare/0.12.2...0.13.0
+
 ## 0.12.2 - 2026-10-06
 
 <!-- Release notes generated using configuration in .github/release.yml at 3f555598cc2baf95cd7e6e02a71ad32db9d0a16d -->
@@ -172,6 +187,7 @@ turbo_stream()->morph('card', $content);
 // After (v0.8)
 turbo_stream()->replace('card', $content, method: 'morph');  // morph entire element
 turbo_stream()->update('card', $content, method: 'morph');   // morph children only
+
 
 
 
