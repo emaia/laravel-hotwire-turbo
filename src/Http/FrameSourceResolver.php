@@ -15,6 +15,8 @@ final class FrameSourceResolver
     /** Resolve an explicit, redirect-safe source URL for the current Turbo Frame request. */
     public function resolve(Request $request): ?string
     {
+        TurboRequestVariation::mark($request);
+
         if ($this->frameId($request) === null) {
             return null;
         }

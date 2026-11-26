@@ -5,11 +5,14 @@ namespace Emaia\LaravelHotwireTurbo;
 use Closure;
 use Emaia\LaravelHotwireTurbo\Http\FrameSourceResolver;
 use Emaia\LaravelHotwireTurbo\Http\Middleware\TurboMiddleware;
+use Emaia\LaravelHotwireTurbo\Http\TurboRequestVariation;
 use Emaia\LaravelHotwireTurbo\Models\Name;
 use Emaia\LaravelHotwireTurbo\Response as TurboResponse;
 use Emaia\LaravelHotwireTurbo\Testing\AssertableTurboStream;
 use Emaia\LaravelHotwireTurbo\Testing\ConvertTestResponseToTurboStreamCollection;
+use Illuminate\Contracts\Container\Container;
 use Illuminate\Contracts\Http\Kernel;
+use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Request;
 use Illuminate\Support\Facades\Response;
@@ -39,6 +42,11 @@ class TurboServiceProvider extends ServiceProvider
             $this->app->make(Kernel::class)->pushMiddleware(TurboMiddleware::class);
         }
 
+        // FormRequests are copies of the current request; tracking it first lets their marks reach the original.
+        $this->app->beforeResolving(FormRequest::class, function (string $abstract, array $parameters, Container $app) {
+            TurboRequestVariation::track($app->make('request'));
+        });
+
         $modelNamespaces = config('turbo.model_namespaces');
 
         if (is_array($modelNamespaces)) {
@@ -50,10 +58,14 @@ class TurboServiceProvider extends ServiceProvider
         });
 
         Request::macro('wantsTurboStream', function (): bool {
-            return Str::contains(request()->header('Accept', ''), 'text/vnd.turbo-stream');
+            TurboRequestVariation::mark($this);
+
+            return Str::contains($this->header('Accept', ''), 'text/vnd.turbo-stream');
         });
 
         Request::macro('turboFrameId', function (): ?string {
+            TurboRequestVariation::mark($this);
+
             $frame = $this->header('Turbo-Frame');
 
             return is_string($frame) && trim($frame) !== '' ? trim($frame) : null;

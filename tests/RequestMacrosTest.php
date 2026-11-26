@@ -1,5 +1,47 @@
 <?php
 
+use Emaia\LaravelHotwireTurbo\Http\FrameSourceResolver;
+use Emaia\LaravelHotwireTurbo\Http\TurboRequestVariation;
+use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Http\Request;
+
+it('marks the request when negotiating Turbo even without variant headers', function (string $macro) {
+    $request = Request::create('/');
+
+    expect(TurboRequestVariation::isMarked($request))->toBeFalse();
+    $request->{$macro}();
+    expect(TurboRequestVariation::isMarked($request))->toBeTrue();
+})->with(['wantsTurboStream', 'wasFromTurboFrame', 'turboFrameId', 'turboFrameSource']);
+
+it('shares the variation state with a copy of the tracked request', function () {
+    $request = Request::create('/');
+    TurboRequestVariation::track($request);
+
+    $copy = Request::createFrom($request);
+    expect($copy->wasFromTurboFrame())->toBeFalse(); // @phpstan-ignore method.notFound
+
+    expect(TurboRequestVariation::isMarked($request))->toBeTrue()
+        ->and(TurboRequestVariation::isMarked(Request::create('/')))->toBeFalse();
+});
+
+it('marks the request when the frame source is resolved directly', function () {
+    $request = Request::create('/');
+
+    app(FrameSourceResolver::class)->resolve($request);
+
+    expect(TurboRequestVariation::isMarked($request))->toBeTrue();
+});
+
+it('tracks the current request before resolving a FormRequest copy', function () {
+    $request = Request::create('/');
+    app()->instance('request', $request);
+
+    $form = app(VariationFormRequest::class);
+    expect($form)->not->toBe($request)
+        ->and($form->wasFromTurboFrame())->toBeFalse() // @phpstan-ignore method.notFound
+        ->and(TurboRequestVariation::isMarked($request))->toBeTrue();
+});
+
 it('detects turbo stream accept header', function () {
     $response = $this->call('GET', '/', [], [], [], [
         'HTTP_ACCEPT' => 'text/vnd.turbo-stream.html, text/html',
@@ -120,3 +162,11 @@ it('returns null when X-Turbo-Request-Id header is absent', function () {
 
     expect(request()->turboRequestId())->toBeNull(); // @phpstan-ignore method.notFound
 });
+
+class VariationFormRequest extends FormRequest
+{
+    public function rules(): array
+    {
+        return [];
+    }
+}
