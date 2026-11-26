@@ -10,7 +10,9 @@ use Emaia\LaravelHotwireTurbo\Models\Name;
 use Emaia\LaravelHotwireTurbo\Response as TurboResponse;
 use Emaia\LaravelHotwireTurbo\Testing\AssertableTurboStream;
 use Emaia\LaravelHotwireTurbo\Testing\ConvertTestResponseToTurboStreamCollection;
+use Illuminate\Contracts\Container\Container;
 use Illuminate\Contracts\Http\Kernel;
+use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Request;
 use Illuminate\Support\Facades\Response;
@@ -39,6 +41,11 @@ class TurboServiceProvider extends ServiceProvider
         if (config('turbo.auto_redirect_303', true)) {
             $this->app->make(Kernel::class)->pushMiddleware(TurboMiddleware::class);
         }
+
+        // FormRequests are copies of the current request; tracking it first lets their marks reach the original.
+        $this->app->beforeResolving(FormRequest::class, function (string $abstract, array $parameters, Container $app) {
+            TurboRequestVariation::track($app->make('request'));
+        });
 
         $modelNamespaces = config('turbo.model_namespaces');
 
@@ -71,8 +78,6 @@ class TurboServiceProvider extends ServiceProvider
         });
 
         Request::macro('turboFrameSource', function (): ?string {
-            TurboRequestVariation::mark($this);
-
             return app(FrameSourceResolver::class)->resolve($this);
         });
 

@@ -1,6 +1,7 @@
 <?php
 
 use Emaia\LaravelHotwireTurbo\Http\Middleware\TurboMiddleware;
+use Emaia\LaravelHotwireTurbo\Http\TurboRequestVariation;
 use Illuminate\Support\Facades\Route;
 
 beforeEach(function () {
@@ -64,4 +65,16 @@ it('does not convert redirect when middleware is not applied', function () {
         ]);
 
     $response->assertStatus(302);
+});
+
+it('marks redirects as varying by Turbo headers', function () {
+    $this->post('/posts', [], ['Accept' => 'text/html'])->assertStatus(302);
+
+    expect(TurboRequestVariation::isMarked(request()))->toBeTrue();
+});
+
+it('does not mark responses it leaves untouched', function () {
+    $this->get('/no-redirect')->assertOk();
+
+    expect(TurboRequestVariation::isMarked(request()))->toBeFalse();
 });

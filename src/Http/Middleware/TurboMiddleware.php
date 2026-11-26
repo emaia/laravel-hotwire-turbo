@@ -3,6 +3,7 @@
 namespace Emaia\LaravelHotwireTurbo\Http\Middleware;
 
 use Closure;
+use Emaia\LaravelHotwireTurbo\Http\TurboRequestVariation;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -16,6 +17,9 @@ class TurboMiddleware
         if (! $response instanceof RedirectResponse) {
             return $response;
         }
+
+        // The redirect status depends on Turbo headers, including their absence.
+        TurboRequestVariation::mark($request);
 
         if (! $this->isTurboVisit($request)) {
             return $response;
